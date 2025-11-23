@@ -1,0 +1,5 @@
+{
+  "name": "Hoosier Illusions",
+  "description": "A video player that plays videos from URLs based on user-provided trigger words. Includes a password-protected admin panel to manage trigger word and URL mappings.",
+  "requestFramePermissions": []
+}

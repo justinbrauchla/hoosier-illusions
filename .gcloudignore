@@ -1,0 +1,50 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore, with the addition of
+# "#!include" directives (which insert the entries of the given .gitignore-style
+# file at that point).
+
+#!include .gitignore
+
+# Node.js dependencies
+node_modules/
+
+# Development files
+.env.local
+*.backup
+temp_*.txt
+
+# Source files (we only need dist and server)
+src/
+components/
+hooks/
+App.tsx
+index.tsx
+types.ts
+constants.ts
+*.tsx
+vite.config.ts
+tsconfig.json
+
+# Build tools
+.vite/
+
+# Documentation
+README.md
+OVERLAY_INTEGRATION.md
+
+# Archives
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Force include dist folder (overriding .gitignore)
+!dist/
