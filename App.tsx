@@ -313,10 +313,17 @@ const App: React.FC = () => {
 
       let newAudioUrl = mapping.audioUrl;
 
+      console.log('🎵 Audio URL from mapping:', mapping.audioUrl);
+      console.log('🎵 Trigger key:', key);
+      console.log('🎵 Mapping title:', mapping.title);
+
       if (!newAudioUrl) {
         // Auto-construct on-demand URL if blank
-        const trackSlug = encodeURIComponent(key.trim().replace(/\s+/g, ' '));
+        // Use the title field if available (properly cased), otherwise use the key
+        const trackName = mapping.title || key.trim();
+        const trackSlug = encodeURIComponent(trackName.replace(/\s+/g, ' '));
         newAudioUrl = `https://stream.hoosierillusions.com/public/hoosier-illusions/ondemand/${trackSlug}.mp3`;
+        console.log('🎵 Auto-constructed URL:', newAudioUrl);
       }
 
       // Force reload of stream by appending timestamp to ensure live edge playback
@@ -324,6 +331,8 @@ const App: React.FC = () => {
         const separator = newAudioUrl.includes('?') ? '&' : '?';
         newAudioUrl = `${newAudioUrl}${separator}t=${Date.now()}`;
       }
+
+      console.log('🎵 Final audio URL:', newAudioUrl);
       setAudioSrc(newAudioUrl);
       setPanoSrc(mapping.panoUrl || null);
       setError(null);

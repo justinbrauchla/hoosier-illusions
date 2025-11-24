@@ -6,6 +6,7 @@ export interface MappingValue {
     showInDropdown?: boolean;
     muteVideo?: boolean;
     playFullscreen?: boolean;
+    title?: string; // Properly-cased track name for on-demand URLs
 }
 
 export type Mappings = Record<string, MappingValue>;
