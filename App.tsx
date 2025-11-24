@@ -431,6 +431,9 @@ const App: React.FC = () => {
   return (
     <>
       <audio ref={audioRef} loop />
+      <div className="fixed top-0 left-0 bg-blue-500 text-white z-[100] p-2 text-xs font-mono">
+        Init: {isInitialState.toString()} | Disp: {displayContent.toString()} | Img: {Boolean(effectiveImageSrc).toString()} | Aud: {Boolean(audioSrc).toString()}
+      </div>
       <div className="w-full h-full bg-black text-white flex flex-col items-center justify-center" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
         <div className="w-full h-full flex items-center justify-center">
           <main className="w-full h-full">
