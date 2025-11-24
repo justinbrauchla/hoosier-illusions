@@ -95,13 +95,13 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                     autoPlay
                                     loop
                                     muted
-                                    className="absolute inset-0 w-full h-full object-cover"
+                                    className="absolute inset-0 w-full h-full object-cover scale-[0.85]"
                                 />
                             ) : (
                                 <img
                                     src={currentPoster.imagePlaceholder}
                                     alt="Background"
-                                    className="absolute inset-0 w-full h-full object-cover"
+                                    className="absolute inset-0 w-full h-full object-cover scale-[0.85]"
                                 />
                             )
                         ) : (
