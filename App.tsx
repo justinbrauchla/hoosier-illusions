@@ -89,7 +89,7 @@ const App: React.FC = () => {
   };
 
   // Custom hooks - Autoplay muted to allow browser autoplay
-  const { audioRef, isMuted, setIsMuted } = useMediaController(audioSrc, true);
+  const { audioRef, isMuted, setIsMuted, play } = useMediaController(audioSrc, true);
   const { nowPlaying, albumArt } = useNowPlaying(audioSrc, mappings, setVideoSrc, setImageSrc, setCurrentMapping, isInitialState);
 
   // Handle Input Window State
@@ -101,11 +101,9 @@ const App: React.FC = () => {
   const handleCloseInput = () => {
     setShowInput(false);
     setIsInitialState(false);
+    // Unmute and play when closing input (user interaction)
     setIsMuted(false);
-    // Explicitly play audio on user interaction to ensure browser allows it
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.error("Play failed:", e));
-    }
+    play();
   };
 
   const handleTriggerSuccess = () => {

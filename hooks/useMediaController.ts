@@ -30,7 +30,7 @@ export const useMediaController = (audioSrc: string | null, initialMuted: boolea
         if (isPlaying && audioSrc) {
             audio.play().catch(e => {
                 console.error("Audio play failed", e);
-                setIsPlaying(false);
+                // Don't disable isPlaying, so subsequent interactions can retry
             });
         } else {
             audio.pause();
@@ -41,6 +41,11 @@ export const useMediaController = (audioSrc: string | null, initialMuted: boolea
         setIsMuted(prev => !prev);
     };
 
+    const play = () => {
+        setIsPlaying(true);
+        audioRef.current?.play().catch(console.error);
+    };
+
     return {
         audioRef,
         isPlaying,
@@ -49,6 +54,7 @@ export const useMediaController = (audioSrc: string | null, initialMuted: boolea
         setVolume,
         isMuted,
         setIsMuted,
-        toggleMute
+        toggleMute,
+        play
     };
 };
