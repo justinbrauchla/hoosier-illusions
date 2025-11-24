@@ -292,7 +292,9 @@ const App: React.FC = () => {
   const playTrigger = (key: string) => {
     const triggerKey = key.trim().toLowerCase();
     const mapping = mappings[triggerKey];
+    console.log('🎯 playTrigger called:', { key, triggerKey, hasMapping: !!mapping });
     if (mapping) {
+      console.log('🎯 Setting states:', { videoUrl: mapping.videoUrl, imageUrl: mapping.imageUrl, audioUrl: mapping.audioUrl });
       setCurrentMapping(mapping);
       setIsInitialState(false);
       setIsMuted(false);
@@ -425,6 +427,8 @@ const App: React.FC = () => {
       : 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png'
     );
   const displayContent = !isInitialState && (panoSrc || videoSrc || effectiveImageSrc);
+
+  console.log('🎨 Render state:', { isInitialState, displayContent, hasEffectiveImageSrc: !!effectiveImageSrc, hasVideoSrc: !!videoSrc, hasPanoSrc: !!panoSrc, hasAudioSrc: !!audioSrc });
 
 
 
