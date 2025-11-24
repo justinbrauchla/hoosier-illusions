@@ -301,7 +301,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const playTrigger = (key: string) => {
+  const playTrigger = async (key: string) => {
     const triggerKey = key.trim().toLowerCase();
     const mapping = mappings[triggerKey];
     if (mapping) {
@@ -318,12 +318,32 @@ const App: React.FC = () => {
       console.log('🎵 Mapping title:', mapping.title);
 
       if (!newAudioUrl) {
-        // Auto-construct on-demand URL if blank
-        // Use the title field if available (properly cased), otherwise use the key
+        // Auto-construct on-demand URL by querying AzuraCast API
         const trackName = mapping.title || key.trim();
-        const trackSlug = encodeURIComponent(trackName.replace(/\s+/g, ' '));
-        newAudioUrl = `https://stream.hoosierillusions.com/public/hoosier-illusions/ondemand/${trackSlug}.mp3`;
-        console.log('🎵 Auto-constructed URL:', newAudioUrl);
+        console.log('🎵 Searching for track:', trackName);
+
+        try {
+          const response = await fetch('https://stream.hoosierillusions.com/api/station/hoosier-illusions/ondemand');
+          const tracks = await response.json();
+
+          // Find track by title (case-insensitive)
+          const track = tracks.find((t: any) =>
+            t.media?.title?.toLowerCase() === trackName.toLowerCase()
+          );
+
+          if (track && track.download_url) {
+            newAudioUrl = `https://stream.hoosierillusions.com${track.download_url}`;
+            console.log('🎵 Found track, download URL:', newAudioUrl);
+          } else {
+            console.log('🎵 Track not found in on-demand library');
+            setError(`Track "${trackName}" not found in on-demand library`);
+            return;
+          }
+        } catch (error) {
+          console.error('🎵 Error fetching on-demand tracks:', error);
+          setError('Failed to fetch track from on-demand library');
+          return;
+        }
       }
 
       // Force reload of stream by appending timestamp to ensure live edge playback
