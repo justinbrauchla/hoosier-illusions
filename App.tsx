@@ -414,9 +414,9 @@ const App: React.FC = () => {
     mappings[key].showInDropdown && key.toLowerCase().includes(trigger.toLowerCase())
   );
 
-  // Display video if available, otherwise show image (custom OR album art via proxy)
+  // Display video if available, otherwise show image (custom OR album art via proxy OR default owl)
   // Only show content if we are NOT in the initial state
-  const effectiveImageSrc = imageSrc || (albumArt ? `/api/album-art?url=${encodeURIComponent(albumArt)}` : null);
+  const effectiveImageSrc = imageSrc || (albumArt ? `/api/album-art?url=${encodeURIComponent(albumArt)}` : 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png');
   const displayContent = !isInitialState && (panoSrc || videoSrc || effectiveImageSrc);
 
 
