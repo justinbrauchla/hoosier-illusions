@@ -503,7 +503,7 @@ const App: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="absolute cursor-pointer z-0" style={getVideoStyle()}
+                            <div className="absolute cursor-pointer z-20" style={getVideoStyle()}
                               onClick={handleOpenInput}
                             >
                               <img
