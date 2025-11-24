@@ -99,6 +99,17 @@ const App: React.FC = () => {
     setIsMuted(true);
   };
 
+  // Handle Escape key to exit expanded view
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
   const handleCloseInput = () => {
     setShowInput(false);
     setIsInitialState(false);
@@ -471,9 +482,9 @@ const App: React.FC = () => {
                         ) : (
                           <>
                             {/* Theater mode - video positioned within theater screen */}
-                            <div className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "absolute cursor-pointer z-0"}
+                            <div className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer" : "absolute cursor-pointer z-0"}
                               style={isExpanded ? {} : getVideoStyle()}
-                              onClick={handleOpenInput}
+                              onClick={isExpanded ? () => setIsExpanded(false) : handleOpenInput}
                             >
                               <VideoPlayer
                                 key={videoSrc}
@@ -533,16 +544,16 @@ const App: React.FC = () => {
                       </div>
                     ) : null}
 
-                    {/* Expand/Shrink Button */}
-                    {!panoSrc && (
+                    {/* Expand Button (Only visible when not expanded) */}
+                    {!panoSrc && !isExpanded && (
                       <button
                         className="absolute bottom-4 right-4 z-[101] p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg transition-colors backdrop-blur-sm border border-white/20"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setIsExpanded(!isExpanded);
+                          setIsExpanded(true);
                         }}
                       >
-                        {isExpanded ? <Minimize size={24} /> : <Maximize size={24} />}
+                        <Maximize size={24} />
                       </button>
                     )}
                   </>
