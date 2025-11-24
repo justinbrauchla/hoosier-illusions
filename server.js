@@ -69,11 +69,7 @@ const defaultMappings = {
     showInDropdown: true,
     muteVideo: true,
   },
-  'vr': {
-    panoUrl: 'https://pannellum.org/images/alma.jpg',
-    showInDropdown: true,
-    muteVideo: true,
-  },
+
   'candy cane lane': {
     audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Candy%20Cane%20Lane.mp3',
     showInDropdown: true,
