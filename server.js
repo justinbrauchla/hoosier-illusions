@@ -178,7 +178,18 @@ app.post('/api/custom-media', async (req, res) => {
   try {
     const bucket = storage.bucket(BUCKET_NAME);
     const file = bucket.file(MAPPINGS_FILE);
-    await file.save(JSON.stringify(req.body, null, 2), {
+
+    // Calculate effective mappings to save
+    // If a default mapping is missing from req.body, explicitly mark it as deleted
+    const mappingsToSave = { ...req.body };
+
+    Object.keys(defaultMappings).forEach(key => {
+      if (!mappingsToSave[key]) {
+        mappingsToSave[key] = { _deleted: true };
+      }
+    });
+
+    await file.save(JSON.stringify(mappingsToSave, null, 2), {
       contentType: 'application/json',
     });
     res.json({ success: true });
