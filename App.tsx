@@ -593,7 +593,7 @@ const App: React.FC = () => {
                 {/* Centered Input Overlay */}
                 {showInput && (
                   <div
-                    className="absolute inset-0 flex items-start justify-center pt-4 sm:pt-16 bg-black/60 backdrop-blur-sm z-50"
+                    className="absolute inset-0 flex items-start justify-center pt-4 sm:pt-16 bg-black/60 backdrop-blur-sm z-[110]"
                     onClick={handleCloseInput}
                   >
                     <div

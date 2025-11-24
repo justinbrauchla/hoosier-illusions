@@ -13,51 +13,66 @@ export const useNowPlaying = (
     const [albumArt, setAlbumArt] = useState<string | null>(null);
 
     useEffect(() => {
-        // Only fetch if playing a radio stream
-        if (!audioSrc || !audioSrc.includes('/radio.mp3')) {
+        // Check if playing any AzuraCast audio
+        const isAzuraCastAudio = audioSrc && audioSrc.includes('stream.hoosierillusions.com');
+
+        if (!isAzuraCastAudio) {
             setNowPlaying(null);
             setAlbumArt(null);
             return;
         }
 
+        // Determine if it's the live stream or a direct track URL
+        const isLiveStream = audioSrc.includes('/radio.mp3');
+
         const fetchNowPlaying = async () => {
             try {
-                // Use local server proxy to avoid CORS issues and external dependencies
-                const response = await fetch(`${window.location.origin}/api/nowplaying`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const nowPlayingData: NowPlayingData = await response.json();
-                setNowPlaying(nowPlayingData);
+                if (isLiveStream) {
+                    // Fetch Now Playing for live stream
+                    const response = await fetch(`${window.location.origin}/api/nowplaying`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const nowPlayingData: NowPlayingData = await response.json();
+                    setNowPlaying(nowPlayingData);
 
-                // Set album art with fallback to station logo
-                const art = nowPlayingData?.now_playing?.song?.art ||
-                    nowPlayingData?.station?.art ||
-                    nowPlayingData?.station?.logo_url ||
-                    null;
-                setAlbumArt(art);
+                    // Set album art with fallback to station logo
+                    const art = nowPlayingData?.now_playing?.song?.art ||
+                        nowPlayingData?.station?.art ||
+                        nowPlayingData?.station?.logo_url ||
+                        null;
+                    setAlbumArt(art);
 
-                // Only update video/mapping if NOT in initial state
-                if (!isInitialState && nowPlayingData?.now_playing?.song?.title) {
-                    const songTitle = nowPlayingData.now_playing.song.title.trim().toLowerCase();
-                    const songMapping = mappings[songTitle];
-                    if (songMapping) {
-                        // Update current mapping so fullscreen setting applies
-                        setCurrentMapping(songMapping);
-                        if (songMapping.videoUrl) {
-                            setVideoSrc(songMapping.videoUrl);
-                            setImageSrc(null);
-                        } else if (songMapping.imageUrl) {
-                            setVideoSrc(null);
-                            setImageSrc(songMapping.imageUrl);
+                    // Only update video/mapping if NOT in initial state
+                    if (!isInitialState && nowPlayingData?.now_playing?.song?.title) {
+                        const songTitle = nowPlayingData.now_playing.song.title.trim().toLowerCase();
+                        const songMapping = mappings[songTitle];
+                        if (songMapping) {
+                            // Update current mapping so fullscreen setting applies
+                            setCurrentMapping(songMapping);
+                            if (songMapping.videoUrl) {
+                                setVideoSrc(songMapping.videoUrl);
+                                setImageSrc(null);
+                            } else if (songMapping.imageUrl) {
+                                setVideoSrc(null);
+                                setImageSrc(songMapping.imageUrl);
+                            } else {
+                                setVideoSrc(null); // Clear video so album art shows
+                                setImageSrc(null);
+                            }
                         } else {
-                            setVideoSrc(null); // Clear video so album art shows
+                            // No mapping for this song, clear current mapping and video
+                            setCurrentMapping(null);
+                            setVideoSrc(null);
                             setImageSrc(null);
                         }
-                    } else {
-                        // No mapping for this song, clear current mapping and video
-                        setCurrentMapping(null);
-                        setVideoSrc(null);
-                        setImageSrc(null);
                     }
+                } else {
+                    // Fetch metadata for direct track URL
+                    const response = await fetch(`${window.location.origin}/api/track-metadata?url=${encodeURIComponent(audioSrc)}`);
+                    if (!response.ok) throw new Error('Failed to fetch track metadata');
+                    const data = await response.json();
+
+                    setAlbumArt(data.albumArt || null);
+                    // Don't update nowPlaying or mappings for direct tracks
                 }
             } catch (error) {
                 console.error("Failed to fetch Now Playing data:", error);

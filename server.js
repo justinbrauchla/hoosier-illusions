@@ -616,6 +616,20 @@ app.get('/api/nowplaying', async (req, res) => {
   }
 });
 
+// Get track metadata from audio URL
+app.get('/api/track-metadata', async (req, res) => {
+  const audioUrl = req.query.url;
+  if (!audioUrl) return res.status(400).json({ error: 'Missing url parameter' });
+
+  // TODO: Implement proper AzuraCast file/media API lookup
+  // For now, return null and rely on custom imageUrl in admin panel
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json({ albumArt: null });
+});
+
+
+
 // Proxy for Album Art to avoid CORS issues
 app.get('/api/album-art', async (req, res) => {
   const imageUrl = req.query.url;

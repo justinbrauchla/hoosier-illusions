@@ -34,7 +34,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
             <div
                 className={`relative bg-black border-2 border-gold-600 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col transform transition-all scale-100 ${isAlbumPosters ? 'w-full max-w-xl max-h-[90vh]' : 'w-full max-w-xl max-h-[80vh]'
                     } `}
