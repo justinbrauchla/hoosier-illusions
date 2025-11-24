@@ -416,7 +416,9 @@ const App: React.FC = () => {
 
   // Display video if available, otherwise show image (custom OR album art via proxy OR default owl)
   // Only show content if we are NOT in the initial state
-  const effectiveImageSrc = imageSrc || (albumArt ? `/api/album-art?url=${encodeURIComponent(albumArt)}` : 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png');
+  const OWL_URL = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
+  const artUrl = albumArt || OWL_URL;
+  const effectiveImageSrc = imageSrc || `/api/album-art?url=${encodeURIComponent(artUrl)}`;
   const displayContent = !isInitialState && (panoSrc || videoSrc || effectiveImageSrc);
 
 
@@ -503,6 +505,7 @@ const App: React.FC = () => {
                             <div className="absolute cursor-pointer z-20" style={getVideoStyle()}
                               onClick={handleOpenInput}
                             >
+                              <div className="absolute top-0 left-0 bg-red-500 text-white z-50 text-xs p-1">DEBUG: ART MODE</div>
                               <img
                                 src={effectiveImageSrc}
                                 alt="Cover"
