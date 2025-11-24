@@ -185,6 +185,11 @@ app.post('/api/custom-media', async (req, res) => {
       }
     });
 
+    // FORCE REMOVE 'vr' if it somehow persists
+    if (mappingsToSave['vr']) {
+      delete mappingsToSave['vr'];
+    }
+
     await file.save(JSON.stringify(mappingsToSave, null, 2), {
       contentType: 'application/json',
     });
