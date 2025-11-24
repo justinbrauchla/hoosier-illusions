@@ -592,6 +592,7 @@ app.get('/api/nowplaying', async (req, res) => {
     res.set('Cache-Control', 'public, max-age=3, stale-while-revalidate=5');
     res.json(data);
 
+
   } catch (error) {
     console.error('Error fetching Now Playing data:', error);
 
@@ -612,6 +613,29 @@ app.get('/api/nowplaying', async (req, res) => {
         }
       });
     }
+  }
+});
+
+// Proxy for Album Art to avoid CORS issues
+app.get('/api/album-art', async (req, res) => {
+  const imageUrl = req.query.url;
+  if (!imageUrl) return res.status(400).send('Missing url');
+
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+
+    const contentType = response.headers.get('content-type');
+    res.set('Content-Type', contentType);
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    res.send(buffer);
+  } catch (error) {
+    console.error('Album art proxy error:', error);
+    res.redirect('https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png');
   }
 });
 

@@ -416,9 +416,9 @@ const App: React.FC = () => {
     mappings[key].showInDropdown && key.toLowerCase().includes(trigger.toLowerCase())
   );
 
-  // Display video if available, otherwise show image (custom OR album art)
+  // Display video if available, otherwise show image (custom OR album art via proxy)
   // Only show content if we are NOT in the initial state
-  const effectiveImageSrc = imageSrc || albumArt;
+  const effectiveImageSrc = imageSrc || (albumArt ? `/api/album-art?url=${encodeURIComponent(albumArt)}` : null);
   const displayContent = !isInitialState && (panoSrc || videoSrc || effectiveImageSrc);
 
 
@@ -495,7 +495,6 @@ const App: React.FC = () => {
                               src={effectiveImageSrc}
                               alt="Cover"
                               className="max-w-full max-h-full object-contain"
-                              crossOrigin="anonymous"
                               onError={(e) => {
                                 e.currentTarget.src = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
                               }}
@@ -510,7 +509,6 @@ const App: React.FC = () => {
                                 src={effectiveImageSrc}
                                 alt="Cover"
                                 className="w-full h-full object-cover"
-                                crossOrigin="anonymous"
                                 onError={(e) => {
                                   e.currentTarget.src = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
                                 }}
