@@ -95,13 +95,13 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                     autoPlay
                                     loop
                                     muted
-                                    className="absolute inset-0 w-full h-full object-contain"
+                                    className="absolute inset-0 w-full h-full object-cover"
                                 />
                             ) : (
                                 <img
                                     src={currentPoster.imagePlaceholder}
                                     alt="Background"
-                                    className="absolute inset-0 w-full h-full object-contain"
+                                    className="absolute inset-0 w-full h-full object-cover"
                                 />
                             )
                         ) : (
@@ -114,7 +114,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                             <img
                                 src={data.posterOverlayUrl}
                                 alt={data.label}
-                                className="relative w-full h-full object-contain pointer-events-none"
+                                className="relative w-full h-full object-fill pointer-events-none"
                                 style={{ zIndex: 1 }}
                             />
                         ) : (
