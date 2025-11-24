@@ -112,8 +112,13 @@ app.get('/api/config', async (req, res) => {
     // Deep merge: Defaults < Cloud
     const mergedMappings = { ...defaultMappings, ...cloudMappings };
 
+    // Filter out mappings marked as deleted
+    const finalMappings = Object.fromEntries(
+      Object.entries(mergedMappings).filter(([_, value]) => !value._deleted)
+    );
+
     res.set('Cache-Control', 'public, max-age=10'); // Cache for 10s
-    res.json(mergedMappings);
+    res.json(finalMappings);
   } catch (error) {
     console.error('Error fetching config:', error);
     // Fallback to defaults
