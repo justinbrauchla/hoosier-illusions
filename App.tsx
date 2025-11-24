@@ -294,6 +294,8 @@ const App: React.FC = () => {
     const mapping = mappings[triggerKey];
     if (mapping) {
       setCurrentMapping(mapping);
+      setIsInitialState(false);
+      setIsMuted(false);
       setVideoSrc(mapping.videoUrl || null);
       setImageSrc(mapping.imageUrl || null);
 
