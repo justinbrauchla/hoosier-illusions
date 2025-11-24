@@ -2,6 +2,7 @@ export interface MappingValue {
     videoUrl?: string;
     audioUrl?: string;
     panoUrl?: string;
+    imageUrl?: string;
     showInDropdown?: boolean;
     muteVideo?: boolean;
     playFullscreen?: boolean;

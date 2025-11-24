@@ -5,6 +5,7 @@ export const useNowPlaying = (
     audioSrc: string | null,
     mappings: Mappings,
     setVideoSrc: (src: string | null) => void,
+    setImageSrc: (src: string | null) => void,
     setCurrentMapping: (mapping: MappingValue | null) => void,
     isInitialState: boolean = false
 ) => {
@@ -41,11 +42,19 @@ export const useNowPlaying = (
                         setCurrentMapping(songMapping);
                         if (songMapping.videoUrl) {
                             setVideoSrc(songMapping.videoUrl);
+                            setImageSrc(null);
+                        } else if (songMapping.imageUrl) {
+                            setVideoSrc(null);
+                            setImageSrc(songMapping.imageUrl);
+                        } else {
+                            setVideoSrc(null); // Clear video so album art shows
+                            setImageSrc(null);
                         }
-                        // If no video URL, album art will be used as fallback
                     } else {
-                        // No mapping for this song, clear current mapping
+                        // No mapping for this song, clear current mapping and video
                         setCurrentMapping(null);
+                        setVideoSrc(null);
+                        setImageSrc(null);
                     }
                 }
             } catch (error) {
@@ -63,7 +72,7 @@ export const useNowPlaying = (
             setNowPlaying(null);
             setAlbumArt(null);
         };
-    }, [audioSrc, mappings, setVideoSrc, setCurrentMapping, isInitialState]);
+    }, [audioSrc, mappings, setVideoSrc, setImageSrc, setCurrentMapping, isInitialState]);
 
     return { nowPlaying, albumArt };
 };

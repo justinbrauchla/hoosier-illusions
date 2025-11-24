@@ -188,11 +188,15 @@ app.post('/api/custom-media', async (req, res) => {
   }
 });
 
-// Endpoint to validate and save a single mapping
+// Endpoint to save a single mapping (with validation)
 app.post('/api/save-mapping', async (req, res) => {
-  const { trigger, videoUrl, audioUrl, panoUrl, showInDropdown, muteVideo, playFullscreen } = req.body;
+  const { trigger, videoUrl, audioUrl, panoUrl, imageUrl, showInDropdown, muteVideo, playFullscreen } = req.body;
 
-  // Validate URLs
+  if (!trigger) {
+    return res.status(400).json({ error: 'Trigger word is required' });
+  }
+
+  // Validate GCS URLs (only if provided)
   try {
     const validations = [];
     // Only validate if URL is provided and looks like a storage URL (skip streams/panos if needed, but user said "Take generated videoUrl and audioUrl")

@@ -13,9 +13,9 @@ interface AdminModalProps {
   isOpen: boolean;
   onClose: () => void;
   mappings: Mappings;
-  onAddMapping: (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => Promise<void>;
+  onAddMapping: (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, imageUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => Promise<void>;
   onDeleteMapping: (trigger: string) => void;
-  onUpdateMapping: (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => Promise<void>;
+  onUpdateMapping: (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, imageUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => Promise<void>;
   theaterConfig: TheaterConfig;
   onUpdateTheaterConfig: (config: TheaterConfig) => void;
   videoPosition: { top: string; left: string; width: string; height: string };
@@ -51,6 +51,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
   const [newVideoUrl, setNewVideoUrl] = useState('');
   const [newAudioUrl, setNewAudioUrl] = useState('');
   const [newPanoUrl, setNewPanoUrl] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [showInDropdown, setShowInDropdown] = useState(true);
   const [muteVideo, setMuteVideo] = useState(true);
   const [playFullscreen, setPlayFullscreen] = useState(false);
@@ -76,6 +77,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
       setNewVideoUrl('');
       setNewAudioUrl('');
       setNewPanoUrl('');
+      setNewImageUrl('');
       setShowInDropdown(true);
       setMuteVideo(true);
       setPlayFullscreen(false);
@@ -101,12 +103,12 @@ const AdminModal: React.FC<AdminModalProps> = ({
 
     try {
       if (editingTrigger) {
-        if (newVideoUrl.trim() || newAudioUrl.trim() || newPanoUrl.trim()) {
-          await onUpdateMapping(editingTrigger, newVideoUrl, newAudioUrl, newPanoUrl, showInDropdown, muteVideo, playFullscreen);
+        if (newVideoUrl.trim() || newAudioUrl.trim() || newPanoUrl.trim() || newImageUrl.trim()) {
+          await onUpdateMapping(editingTrigger, newVideoUrl, newAudioUrl, newPanoUrl, newImageUrl, showInDropdown, muteVideo, playFullscreen);
         }
       } else {
-        if (newTrigger.trim() && (newVideoUrl.trim() || newAudioUrl.trim() || newPanoUrl.trim())) {
-          await onAddMapping(newTrigger, newVideoUrl, newAudioUrl, newPanoUrl, showInDropdown, muteVideo, playFullscreen);
+        if (newTrigger.trim() && (newVideoUrl.trim() || newAudioUrl.trim() || newPanoUrl.trim() || newImageUrl.trim())) {
+          await onAddMapping(newTrigger, newVideoUrl, newAudioUrl, newPanoUrl, newImageUrl, showInDropdown, muteVideo, playFullscreen);
         }
       }
 
@@ -115,6 +117,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
       setNewVideoUrl('');
       setNewAudioUrl('');
       setNewPanoUrl('');
+      setNewImageUrl('');
       setShowInDropdown(true);
       setMuteVideo(true);
       setPlayFullscreen(false);
@@ -148,11 +151,16 @@ const AdminModal: React.FC<AdminModalProps> = ({
         const audioTitle = titleCaseTrigger.replace(/\s+/g, '%20');
         const defaultAudioUrl = `https://storage.googleapis.com/hoosierillusionsaudio/${audioTitle}.mp3`;
 
+        // Image: Remove spaces from Title Case (assuming same convention as video, or maybe png?)
+        const defaultImageUrl = `https://storage.googleapis.com/hoosierillusionsimages/${videoTitle}.png`;
+
         setNewVideoUrl(defaultVideoUrl);
         setNewAudioUrl(defaultAudioUrl);
+        setNewImageUrl(defaultImageUrl);
       } else {
         setNewVideoUrl('');
         setNewAudioUrl('');
+        setNewImageUrl('');
       }
     }
   };
@@ -165,6 +173,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
       setNewVideoUrl(mapping.videoUrl || '');
       setNewAudioUrl(mapping.audioUrl || '');
       setNewPanoUrl(mapping.panoUrl || '');
+      setNewImageUrl(mapping.imageUrl || '');
       setShowInDropdown(mapping.showInDropdown ?? true);
       setMuteVideo(mapping.muteVideo ?? true);
       setPlayFullscreen(mapping.playFullscreen ?? false);
@@ -177,6 +186,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
     setNewVideoUrl('');
     setNewAudioUrl('');
     setNewPanoUrl('');
+    setNewImageUrl('');
     setShowInDropdown(true);
     setMuteVideo(true);
     setPlayFullscreen(false);
@@ -476,6 +486,10 @@ const AdminModal: React.FC<AdminModalProps> = ({
                     <label htmlFor="pano-url" className="block text-sm font-medium text-gray-400 mb-1">360 Pano URL (Optional)</label>
                     <input id="pano-url" type="url" value={newPanoUrl} onChange={(e) => setNewPanoUrl(e.target.value)} placeholder="https://example.com/pano" className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
+                  <div>
+                    <label htmlFor="image-url" className="block text-sm font-medium text-gray-400 mb-1">Cover Image URL (Optional)</label>
+                    <input id="image-url" type="text" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="https://example.com/image.png" className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
                   <div className="flex items-center pt-2">
                     <input
                       id="show-in-dropdown"
@@ -563,6 +577,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
                             <p className="text-gray-400 text-sm truncate" title={videoUrl}>Video: {videoUrl}</p>
                             {audioUrl && <p className="text-gray-500 text-xs truncate" title={audioUrl}>Audio: {audioUrl}</p>}
                             {value.panoUrl && <p className="text-indigo-400 text-xs truncate" title={value.panoUrl}>Pano: {value.panoUrl}</p>}
+                            {value.imageUrl && <p className="text-green-400 text-xs truncate" title={value.imageUrl}>Image: {value.imageUrl}</p>}
                           </div>
                           <div className="ml-4 flex items-center gap-2">
                             <button onClick={() => handleStartEditing(trigger)} className="p-2 text-gray-400 hover:text-blue-400 rounded-full hover:bg-gray-600 transition-colors" aria-label={`Edit mapping for ${trigger}`}>

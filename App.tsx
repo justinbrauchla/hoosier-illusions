@@ -44,6 +44,7 @@ const App: React.FC = () => {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const [panoSrc, setPanoSrc] = useState<string | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trigger, setTrigger] = useState('');
@@ -89,7 +90,7 @@ const App: React.FC = () => {
 
   // Custom hooks - Autoplay muted to allow browser autoplay
   const { audioRef, isMuted, setIsMuted } = useMediaController(audioSrc, true);
-  const { nowPlaying, albumArt } = useNowPlaying(audioSrc, mappings, setVideoSrc, setCurrentMapping, isInitialState);
+  const { nowPlaying, albumArt } = useNowPlaying(audioSrc, mappings, setVideoSrc, setImageSrc, setCurrentMapping, isInitialState);
 
   // Handle Input Window State
   const handleOpenInput = () => {
@@ -296,6 +297,7 @@ const App: React.FC = () => {
     if (mapping) {
       setCurrentMapping(mapping);
       setVideoSrc(mapping.videoUrl || null);
+      setImageSrc(mapping.imageUrl || null);
 
       let newAudioUrl = mapping.audioUrl || null;
       // Force reload of stream by appending timestamp to ensure live edge playback
@@ -309,6 +311,7 @@ const App: React.FC = () => {
     } else {
       setCurrentMapping(null);
       setVideoSrc(null);
+      setImageSrc(null);
       setAudioSrc(null);
       setPanoSrc(null);
       setError(`'${key}' is not a valid trigger word.`);
@@ -362,13 +365,13 @@ const App: React.FC = () => {
     setIsDropdownOpen(false);
   };
 
-  const addMapping = async (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => {
+  const addMapping = async (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, imageUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => {
     try {
       const response = await fetch('/api/save-mapping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          trigger, videoUrl, audioUrl, panoUrl, showInDropdown, muteVideo, playFullscreen
+          trigger, videoUrl, audioUrl, panoUrl, imageUrl, showInDropdown, muteVideo, playFullscreen
         })
       });
 
@@ -382,6 +385,7 @@ const App: React.FC = () => {
         videoUrl: videoUrl.trim(),
         audioUrl: audioUrl.trim(),
         panoUrl: panoUrl.trim(),
+        imageUrl: imageUrl.trim(),
         showInDropdown, muteVideo, playFullscreen
       };
 
@@ -397,9 +401,9 @@ const App: React.FC = () => {
     }
   };
 
-  const updateMapping = async (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => {
+  const updateMapping = async (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, imageUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => {
     // Reuse addMapping logic since the API handles both upsert
-    return addMapping(trigger, videoUrl, audioUrl, panoUrl, showInDropdown, muteVideo, playFullscreen);
+    return addMapping(trigger, videoUrl, audioUrl, panoUrl, imageUrl, showInDropdown, muteVideo, playFullscreen);
   };
 
   const deleteMapping = (trigger: string) => {
@@ -414,7 +418,7 @@ const App: React.FC = () => {
 
   // Display video if available, otherwise show album art
   // Only show content if we are NOT in the initial state
-  const displayContent = !isInitialState && (panoSrc || videoSrc || (albumArt && !videoSrc));
+  const displayContent = !isInitialState && (panoSrc || videoSrc || imageSrc || (albumArt && !videoSrc));
 
 
 
@@ -471,6 +475,38 @@ const App: React.FC = () => {
                               />
                             </div>
                             {/* Theater Mask Overlay */}
+                            <img
+                              src={theaterConfig.maskUrl}
+                              alt="Theater Frame"
+                              className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10"
+                            />
+                          </>
+                        )}
+                      </div>
+                    ) : imageSrc ? (
+                      <div className="relative w-full h-full">
+                        {currentMapping?.playFullscreen ? (
+                          <div
+                            className="w-full h-full cursor-pointer relative z-50 bg-black flex items-center justify-center"
+                            onClick={handleOpenInput}
+                          >
+                            <img
+                              src={imageSrc}
+                              alt="Cover"
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            <div className="absolute cursor-pointer z-0" style={getVideoStyle()}
+                              onClick={handleOpenInput}
+                            >
+                              <img
+                                src={imageSrc}
+                                alt="Cover"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
                             <img
                               src={theaterConfig.maskUrl}
                               alt="Theater Frame"
