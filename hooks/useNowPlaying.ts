@@ -28,10 +28,11 @@ export const useNowPlaying = (
                 const nowPlayingData: NowPlayingData = await response.json();
                 setNowPlaying(nowPlayingData);
 
-                // Set album art
-                if (nowPlayingData?.now_playing?.song?.art) {
-                    setAlbumArt(nowPlayingData.now_playing.song.art);
-                }
+                // Set album art with fallback to station logo
+                const art = nowPlayingData?.now_playing?.song?.art ||
+                    nowPlayingData?.station?.logo_url ||
+                    null;
+                setAlbumArt(art);
 
                 // Only update video/mapping if NOT in initial state
                 if (!isInitialState && nowPlayingData?.now_playing?.song?.title) {

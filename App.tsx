@@ -416,9 +416,10 @@ const App: React.FC = () => {
     mappings[key].showInDropdown && key.toLowerCase().includes(trigger.toLowerCase())
   );
 
-  // Display video if available, otherwise show album art
+  // Display video if available, otherwise show image (custom OR album art)
   // Only show content if we are NOT in the initial state
-  const displayContent = !isInitialState && (panoSrc || videoSrc || imageSrc || (albumArt && !videoSrc));
+  const effectiveImageSrc = imageSrc || albumArt;
+  const displayContent = !isInitialState && (panoSrc || videoSrc || effectiveImageSrc);
 
 
 
@@ -483,7 +484,7 @@ const App: React.FC = () => {
                           </>
                         )}
                       </div>
-                    ) : imageSrc ? (
+                    ) : effectiveImageSrc ? (
                       <div className="relative w-full h-full">
                         {currentMapping?.playFullscreen ? (
                           <div
@@ -491,7 +492,7 @@ const App: React.FC = () => {
                             onClick={handleOpenInput}
                           >
                             <img
-                              src={imageSrc}
+                              src={effectiveImageSrc}
                               alt="Cover"
                               className="max-w-full max-h-full object-contain"
                             />
@@ -502,7 +503,7 @@ const App: React.FC = () => {
                               onClick={handleOpenInput}
                             >
                               <img
-                                src={imageSrc}
+                                src={effectiveImageSrc}
                                 alt="Cover"
                                 className="w-full h-full object-cover"
                               />
@@ -514,22 +515,6 @@ const App: React.FC = () => {
                             />
                           </>
                         )}
-                      </div>
-                    ) : albumArt ? (
-                      <div
-                        className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black cursor-pointer z-50 relative"
-                        onClick={handleOpenInput}
-                      >
-                        <img
-                          src={albumArt}
-                          alt="Album Art"
-                          className="max-w-full max-h-full object-contain opacity-80"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="bg-white/20 backdrop-blur-md border border-white/50 rounded-full p-4 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
-                            <Play size={32} className="text-white fill-white opacity-90" />
-                          </div>
-                        </div>
                       </div>
                     ) : null}
                   </>

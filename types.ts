@@ -18,6 +18,9 @@ export interface Song {
 }
 
 export interface NowPlayingData {
+    station?: {
+        logo_url?: string;
+    };
     now_playing: {
         song: Song;
     };
