@@ -495,6 +495,10 @@ const App: React.FC = () => {
                               src={effectiveImageSrc}
                               alt="Cover"
                               className="max-w-full max-h-full object-contain"
+                              crossOrigin="anonymous"
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
+                              }}
                             />
                           </div>
                         ) : (
@@ -506,6 +510,10 @@ const App: React.FC = () => {
                                 src={effectiveImageSrc}
                                 alt="Cover"
                                 className="w-full h-full object-cover"
+                                crossOrigin="anonymous"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
+                                }}
                               />
                             </div>
                             <img

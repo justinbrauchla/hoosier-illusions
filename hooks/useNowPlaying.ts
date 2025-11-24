@@ -30,6 +30,7 @@ export const useNowPlaying = (
 
                 // Set album art with fallback to station logo
                 const art = nowPlayingData?.now_playing?.song?.art ||
+                    nowPlayingData?.station?.art ||
                     nowPlayingData?.station?.logo_url ||
                     null;
                 setAlbumArt(art);
