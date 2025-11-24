@@ -469,8 +469,8 @@ const App: React.FC = () => {
                         {currentMapping?.playFullscreen ? (
                           // Fullscreen mode - video fills entire container
                           <div
-                            className="w-full h-full cursor-pointer relative z-50"
-                            onClick={handleOpenInput}
+                            className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer" : "w-full h-full cursor-pointer relative z-50"}
+                            onClick={isExpanded ? () => setIsExpanded(false) : handleOpenInput}
                           >
                             <VideoPlayer
                               key={videoSrc}
@@ -506,8 +506,8 @@ const App: React.FC = () => {
                       <div className="relative w-full h-full">
                         {currentMapping?.playFullscreen ? (
                           <div
-                            className="w-full h-full cursor-pointer relative z-50 bg-black flex items-center justify-center"
-                            onClick={handleOpenInput}
+                            className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer" : "w-full h-full cursor-pointer relative z-50 bg-black flex items-center justify-center"}
+                            onClick={isExpanded ? () => setIsExpanded(false) : handleOpenInput}
                           >
                             <img
                               src={effectiveImageSrc}
@@ -520,9 +520,9 @@ const App: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "absolute cursor-pointer z-0"}
+                            <div className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer" : "absolute cursor-pointer z-0"}
                               style={isExpanded ? {} : getVideoStyle()}
-                              onClick={handleOpenInput}
+                              onClick={isExpanded ? () => setIsExpanded(false) : handleOpenInput}
                             >
                               <img
                                 src={effectiveImageSrc}
