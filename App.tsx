@@ -361,6 +361,7 @@ const App: React.FC = () => {
     setTrigger(key);
     playTrigger(key);
     setIsDropdownOpen(false);
+    handleCloseInput();
   };
 
   const addMapping = async (trigger: string, videoUrl: string, audioUrl: string, panoUrl: string, imageUrl: string, showInDropdown: boolean, muteVideo: boolean, playFullscreen: boolean) => {
