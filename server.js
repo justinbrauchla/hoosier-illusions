@@ -644,6 +644,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // Catch-all: serve index.html for any other routes (SPA routing)
 app.use((req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
