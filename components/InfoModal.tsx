@@ -36,7 +36,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
             <div
-                className={`relative bg-black border-2 border-gold-600 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col transform transition-all scale-100 ${isAlbumPosters ? 'w-full max-w-md max-h-[90vh]' : 'w-full max-w-xl max-h-[80vh]'
+                className={`relative bg-black border-2 border-gold-600 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col transform transition-all scale-100 ${isAlbumPosters ? 'w-full max-w-xl max-h-[90vh]' : 'w-full max-w-xl max-h-[80vh]'
                     } `}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
             >
@@ -86,7 +86,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                 {/* Content Area */}
                 {isAlbumPosters ? (
                     // Full image display for Album Posters with video player behind
-                    <div className="w-full aspect-[9/16] relative overflow-hidden bg-black">
+                    <div className="flex-1 overflow-hidden relative">
                         {/* Background image/video behind the poster - this rotates */}
                         {currentPoster?.imagePlaceholder?.startsWith('http') ? (
                             currentPoster.imagePlaceholder.match(/\.(mp4|webm|ogg)$/i) ? (
@@ -95,13 +95,13 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                     autoPlay
                                     loop
                                     muted
-                                    className="absolute inset-0 w-full h-full object-cover scale-[0.85]"
+                                    className="absolute inset-0 w-full h-full object-cover"
                                 />
                             ) : (
                                 <img
                                     src={currentPoster.imagePlaceholder}
                                     alt="Background"
-                                    className="absolute inset-0 w-full h-full object-cover scale-[0.85]"
+                                    className="absolute inset-0 w-full h-full object-cover"
                                 />
                             )
                         ) : (
@@ -114,7 +114,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                             <img
                                 src={data.posterOverlayUrl}
                                 alt={data.label}
-                                className="relative w-full h-full object-fill pointer-events-none"
+                                className="relative w-full h-full object-cover"
                                 style={{ zIndex: 1 }}
                             />
                         ) : (
