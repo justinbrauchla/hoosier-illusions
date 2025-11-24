@@ -27,7 +27,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ config, onSave, onClose,
   };
 
   // Content Card Management
-  const updateContent = (hotspotIndex: number, contentIndex: number, field: keyof ContentItem, value: string) => {
+  const updateContent = (hotspotIndex: number, contentIndex: number, field: keyof ContentItem, value: any) => {
     const newHotspots = [...formData.hotspots];
     const newContents = [...newHotspots[hotspotIndex].contents];
     newContents[contentIndex] = { ...newContents[contentIndex], [field]: value };
@@ -79,8 +79,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ config, onSave, onClose,
             }}
             disabled={saveStatus === 'saving'}
             className={`px-3 py-1.5 rounded flex items-center gap-2 transition-all text-xs font-bold ${saveStatus === 'saved'
-                ? 'bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]'
-                : 'bg-gold-600 text-black hover:bg-gold-500 shadow-[0_0_15px_rgba(212,175,55,0.3)]'
+              ? 'bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]'
+              : 'bg-gold-600 text-black hover:bg-gold-500 shadow-[0_0_15px_rgba(212,175,55,0.3)]'
               } ${saveStatus === 'saving' ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {saveStatus === 'saved' ? (
@@ -202,6 +202,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ config, onSave, onClose,
                                     onChange={(e) => updateContent(hIndex, cIndex, 'imagePlaceholder', e.target.value)}
                                     className="flex-1 bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1"
                                   />
+                                  <div className="flex items-center gap-2 w-24 border-l border-gray-800 pl-2">
+                                    <span className="text-[10px] text-gray-500 uppercase">Scale</span>
+                                    <input
+                                      type="number"
+                                      step="0.05"
+                                      min="0.1"
+                                      max="2.0"
+                                      value={content.scale || 1}
+                                      onChange={(e) => updateContent(hIndex, cIndex, 'scale', parseFloat(e.target.value))}
+                                      className="w-full bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1 text-center"
+                                    />
+                                  </div>
                                   <button onClick={() => removeContent(hIndex, cIndex)} className="text-gray-600 hover:text-red-500 p-1 hover:bg-red-900/20 rounded">
                                     <Trash2 size={14} />
                                   </button>

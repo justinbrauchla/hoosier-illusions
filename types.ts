@@ -35,6 +35,7 @@ export interface ContentItem {
     description: string;
     imagePlaceholder: string;
     linkUrl?: string;
+    scale?: number;
 }
 
 export interface HotspotData {

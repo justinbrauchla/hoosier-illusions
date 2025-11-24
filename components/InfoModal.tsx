@@ -96,12 +96,14 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                     loop
                                     muted
                                     className="absolute inset-0 w-full h-full object-cover"
+                                    style={{ transform: `scale(${currentPoster.scale || 1})` }}
                                 />
                             ) : (
                                 <img
                                     src={currentPoster.imagePlaceholder}
                                     alt="Background"
                                     className="absolute inset-0 w-full h-full object-cover"
+                                    style={{ transform: `scale(${currentPoster.scale || 1})` }}
                                 />
                             )
                         ) : (
