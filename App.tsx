@@ -9,7 +9,7 @@ import PanoViewer from './components/PanoViewer';
 import { HotspotLayer } from './components/HotspotLayer';
 import { InfoModal } from './components/InfoModal';
 import { GameConfig, HotspotData } from './types';
-import { Play } from 'lucide-react';
+import { Play, Maximize, Minimize } from 'lucide-react';
 // ...
 // Fetch mappings from API
 const fetchMappingsFromAPI = async (): Promise<Mappings> => {
@@ -57,6 +57,7 @@ const App: React.FC = () => {
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
 
   const [isInitialState, setIsInitialState] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Hotspot State
   const [gameConfig, setGameConfig] = useState<GameConfig>(DEFAULT_HOTSPOT_CONFIG);
@@ -292,9 +293,7 @@ const App: React.FC = () => {
   const playTrigger = (key: string) => {
     const triggerKey = key.trim().toLowerCase();
     const mapping = mappings[triggerKey];
-    console.log('🎯 playTrigger called:', { key, triggerKey, hasMapping: !!mapping });
     if (mapping) {
-      console.log('🎯 Setting states:', { videoUrl: mapping.videoUrl, imageUrl: mapping.imageUrl, audioUrl: mapping.audioUrl });
       setCurrentMapping(mapping);
       setIsInitialState(false);
       setIsMuted(false);
@@ -428,16 +427,11 @@ const App: React.FC = () => {
     );
   const displayContent = !isInitialState && (panoSrc || videoSrc || effectiveImageSrc);
 
-  console.log('🎨 Render state:', { isInitialState, displayContent, hasEffectiveImageSrc: !!effectiveImageSrc, hasVideoSrc: !!videoSrc, hasPanoSrc: !!panoSrc, hasAudioSrc: !!audioSrc });
-
 
 
   return (
     <>
       <audio ref={audioRef} loop />
-      <div className="fixed top-0 left-0 bg-blue-500 text-white z-[100] p-2 text-xs font-mono">
-        Init: {isInitialState.toString()} | Disp: {displayContent.toString()} | Img: {Boolean(effectiveImageSrc).toString()} | Aud: {Boolean(audioSrc).toString()}
-      </div>
       <div className="w-full h-full bg-black text-white flex flex-col items-center justify-center" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
         <div className="w-full h-full flex items-center justify-center">
           <main className="w-full h-full">
@@ -477,7 +471,8 @@ const App: React.FC = () => {
                         ) : (
                           <>
                             {/* Theater mode - video positioned within theater screen */}
-                            <div className="absolute cursor-pointer z-0" style={getVideoStyle()}
+                            <div className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "absolute cursor-pointer z-0"}
+                              style={isExpanded ? {} : getVideoStyle()}
                               onClick={handleOpenInput}
                             >
                               <VideoPlayer
@@ -514,13 +509,14 @@ const App: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="absolute cursor-pointer z-20" style={getVideoStyle()}
+                            <div className={isExpanded ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "absolute cursor-pointer z-0"}
+                              style={isExpanded ? {} : getVideoStyle()}
                               onClick={handleOpenInput}
                             >
                               <img
                                 src={effectiveImageSrc}
                                 alt="Cover"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain"
                                 crossOrigin="anonymous"
                                 onError={(e) => {
                                   e.currentTarget.src = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
@@ -536,6 +532,19 @@ const App: React.FC = () => {
                         )}
                       </div>
                     ) : null}
+
+                    {/* Expand/Shrink Button */}
+                    {!panoSrc && (
+                      <button
+                        className="absolute bottom-4 right-4 z-[101] p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg transition-colors backdrop-blur-sm border border-white/20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsExpanded(!isExpanded);
+                        }}
+                      >
+                        {isExpanded ? <Minimize size={24} /> : <Maximize size={24} />}
+                      </button>
+                    )}
                   </>
                 ) : (
                   <div className="w-full h-full relative">
