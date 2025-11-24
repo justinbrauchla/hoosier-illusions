@@ -311,7 +311,14 @@ const App: React.FC = () => {
       setVideoSrc(mapping.videoUrl || null);
       setImageSrc(mapping.imageUrl || null);
 
-      let newAudioUrl = mapping.audioUrl || null;
+      let newAudioUrl = mapping.audioUrl;
+
+      if (!newAudioUrl) {
+        // Auto-construct on-demand URL if blank
+        const trackSlug = encodeURIComponent(key.trim().replace(/\s+/g, ' '));
+        newAudioUrl = `https://stream.hoosierillusions.com/public/hoosier-illusions/ondemand/${trackSlug}.mp3`;
+      }
+
       // Force reload of stream by appending timestamp to ensure live edge playback
       if (newAudioUrl && newAudioUrl.includes('radio.mp3')) {
         const separator = newAudioUrl.includes('?') ? '&' : '?';
