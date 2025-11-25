@@ -202,6 +202,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ config, onSave, onClose,
                                     onChange={(e) => updateContent(hIndex, cIndex, 'imagePlaceholder', e.target.value)}
                                     className="flex-1 bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1"
                                   />
+                                  <div className="flex items-center gap-2 w-32 border-l border-gray-800 pl-2">
+                                    <span className="text-[10px] text-gray-500 uppercase">Width %</span>
+                                    <input
+                                      type="number"
+                                      step="1"
+                                      min="10"
+                                      max="100"
+                                      value={content.posterWidth || 85}
+                                      onChange={(e) => updateContent(hIndex, cIndex, 'posterWidth', parseFloat(e.target.value))}
+                                      className="w-full bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1 text-center"
+                                    />
+                                  </div>
                                   <div className="flex items-center gap-2 w-24 border-l border-gray-800 pl-2">
                                     <span className="text-[10px] text-gray-500 uppercase">Scale</span>
                                     <input

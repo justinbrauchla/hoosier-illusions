@@ -86,46 +86,59 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                 {/* Content Area */}
                 {isAlbumPosters ? (
                     // Full image display for Album Posters with video player behind
-                    <div className="flex-1 overflow-hidden relative">
-                        {/* Background image/video behind the poster - this rotates */}
-                        {currentPoster?.imagePlaceholder?.startsWith('http') ? (
-                            currentPoster.imagePlaceholder.match(/\.(mp4|webm|ogg)$/i) ? (
-                                <video
-                                    src={currentPoster.imagePlaceholder}
-                                    autoPlay
-                                    loop
-                                    muted
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                    style={{ transform: `scale(${currentPoster.scale || 1})` }}
+                    <div className="flex-1 overflow-hidden relative flex items-center justify-center p-4 min-h-0">
+                        {/* Wrapper that sizes to the overlay image */}
+                        <div className="relative inline-block max-w-full max-h-full">
+                            {/* Background poster container with 4:5 aspect ratio */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div
+                                    className="relative"
+                                    style={{
+                                        aspectRatio: '4/5',
+                                        width: `${currentPoster?.posterWidth || 85}%`
+                                    }}
+                                >
+                                    {/* Background image/video behind the poster - this rotates */}
+                                    {currentPoster?.imagePlaceholder?.startsWith('http') ? (
+                                        currentPoster.imagePlaceholder.match(/\.(mp4|webm|ogg)$/i) ? (
+                                            <video
+                                                src={currentPoster.imagePlaceholder}
+                                                autoPlay
+                                                loop
+                                                muted
+                                                className="absolute inset-0 w-full h-full object-contain"
+                                                style={{ transform: `scale(${currentPoster.scale || 1})` }}
+                                            />
+                                        ) : (
+                                            <img
+                                                src={currentPoster.imagePlaceholder}
+                                                alt="Background"
+                                                className="absolute inset-0 w-full h-full object-contain"
+                                                style={{ transform: `scale(${currentPoster.scale || 1})` }}
+                                            />
+                                        )
+                                    ) : (
+                                        <div className="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center">
+                                            <p className="text-gray-500 text-sm">No background content configured</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {/* Poster cutout overlay - this stays static and drives the size */}
+                            {data.posterOverlayUrl ? (
+                                <img
+                                    src={data.posterOverlayUrl}
+                                    alt={data.label}
+                                    className="relative block w-auto h-auto max-w-full max-h-[calc(80vh-8rem)] object-contain z-10"
                                 />
                             ) : (
-                                <img
-                                    src={currentPoster.imagePlaceholder}
-                                    alt="Background"
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                    style={{ transform: `scale(${currentPoster.scale || 1})` }}
-                                />
-                            )
-                        ) : (
-                            <div className="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center">
-                                <p className="text-gray-500 text-sm">No background content configured</p>
-                            </div>
-                        )}
-                        {/* Poster cutout overlay - this stays static */}
-                        {data.posterOverlayUrl ? (
-                            <img
-                                src={data.posterOverlayUrl}
-                                alt={data.label}
-                                className="relative w-full h-full object-cover"
-                                style={{ zIndex: 1 }}
-                            />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-                                <p className="text-gold-500 text-sm bg-black/70 px-4 py-2 rounded">
-                                    No poster overlay configured. Set it in Admin Panel → Hotspots.
-                                </p>
-                            </div>
-                        )}
+                                <div className="w-64 h-80 flex items-center justify-center bg-black/50 border border-gold-500/30 relative z-10">
+                                    <p className="text-gold-500 text-sm px-4 text-center">
+                                        No poster overlay configured.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 ) : (
                     // Scrollable Content Area for other hotspots

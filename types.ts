@@ -37,6 +37,9 @@ export interface ContentItem {
     imagePlaceholder: string;
     linkUrl?: string;
     scale?: number;
+    posterWidth?: number; // Width percentage for the 4:5 poster container (default 100)
+    offsetX?: number; // Horizontal offset percentage for poster positioning
+    offsetY?: number; // Vertical offset percentage for poster positioning
 }
 
 export interface HotspotData {
