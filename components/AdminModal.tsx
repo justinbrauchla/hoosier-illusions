@@ -550,34 +550,53 @@ const AdminModal: React.FC<AdminModalProps> = ({
                       const isStream = audioUrl?.endsWith('/radio.mp3');
                       return (
                         <li key={trigger} className="flex items-center justify-between bg-gray-700/50 p-3 rounded-md">
-                          <div className="flex-1 overflow-hidden">
-                            <p className="font-mono text-indigo-400 font-bold truncate flex items-center">
-                              {trigger}
-                              {isStream && (
-                                <span className="ml-2 text-xs bg-cyan-500 text-white px-2 py-1 rounded-full font-sans font-bold">
-                                  Stream
-                                </span>
-                              )}
-                              {showInDropdown === false && (
-                                <span className="ml-2 text-xs bg-gray-500 text-white px-2 py-1 rounded-full font-sans font-bold">
-                                  Hidden
-                                </span>
-                              )}
-                              {muteVideo === false && (
-                                <span className="ml-2 text-xs bg-orange-500 text-white px-2 py-1 rounded-full font-sans font-bold">
-                                  Video Audio
-                                </span>
-                              )}
-                              {value.playFullscreen && (
-                                <span className="ml-2 text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-sans font-bold">
-                                  Fullscreen
-                                </span>
-                              )}
-                            </p>
-                            <p className="text-gray-400 text-sm truncate" title={videoUrl}>Video: {videoUrl}</p>
-                            {audioUrl && <p className="text-gray-500 text-xs truncate" title={audioUrl}>Audio: {audioUrl}</p>}
-                            {value.panoUrl && <p className="text-indigo-400 text-xs truncate" title={value.panoUrl}>Pano: {value.panoUrl}</p>}
-                            {value.imageUrl && <p className="text-green-400 text-xs truncate" title={value.imageUrl}>Image: {value.imageUrl}</p>}
+                          <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                            <div className="flex flex-col items-center justify-center px-2">
+                              <input
+                                type="checkbox"
+                                checked={showInDropdown !== false}
+                                onChange={(e) => {
+                                  onUpdateMapping(
+                                    trigger,
+                                    videoUrl || '',
+                                    audioUrl || '',
+                                    value.panoUrl || '',
+                                    value.imageUrl || '',
+                                    e.target.checked,
+                                    muteVideo ?? true,
+                                    value.playFullscreen ?? false
+                                  );
+                                }}
+                                className="h-4 w-4 rounded border-gray-500 bg-gray-600 text-indigo-500 focus:ring-indigo-500 cursor-pointer"
+                                title="Show in shortcuts dropdown"
+                              />
+                              <span className="text-[10px] text-gray-400 mt-1">Searchable</span>
+                            </div>
+
+                            <div className="flex-1 overflow-hidden">
+                              <p className="font-mono text-indigo-400 font-bold truncate flex items-center">
+                                {trigger}
+                                {isStream && (
+                                  <span className="ml-2 text-xs bg-cyan-500 text-white px-2 py-1 rounded-full font-sans font-bold">
+                                    Stream
+                                  </span>
+                                )}
+                                {muteVideo === false && (
+                                  <span className="ml-2 text-xs bg-orange-500 text-white px-2 py-1 rounded-full font-sans font-bold">
+                                    Video Audio
+                                  </span>
+                                )}
+                                {value.playFullscreen && (
+                                  <span className="ml-2 text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-sans font-bold">
+                                    Fullscreen
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-gray-400 text-sm truncate" title={videoUrl}>Video: {videoUrl}</p>
+                              {audioUrl && <p className="text-gray-500 text-xs truncate" title={audioUrl}>Audio: {audioUrl}</p>}
+                              {value.panoUrl && <p className="text-indigo-400 text-xs truncate" title={value.panoUrl}>Pano: {value.panoUrl}</p>}
+                              {value.imageUrl && <p className="text-green-400 text-xs truncate" title={value.imageUrl}>Image: {value.imageUrl}</p>}
+                            </div>
                           </div>
                           <div className="ml-4 flex items-center gap-2">
                             <button onClick={() => handleStartEditing(trigger)} className="p-2 text-gray-400 hover:text-blue-400 rounded-full hover:bg-gray-600 transition-colors" aria-label={`Edit mapping for ${trigger}`}>

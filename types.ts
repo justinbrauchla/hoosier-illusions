@@ -6,7 +6,10 @@ export interface MappingValue {
     showInDropdown?: boolean;
     muteVideo?: boolean;
     playFullscreen?: boolean;
-    title?: string; // Properly-cased track name for on-demand URLs
+    title?: string;
+    album?: string;
+    artist?: string;
+    _deleted?: boolean;
 }
 
 export type Mappings = Record<string, MappingValue>;
@@ -55,7 +58,9 @@ export interface HotspotData {
 
 export interface GameConfig {
     hotspotIconUrl: string;
+    merchandiseHotspotIconUrl?: string;
     hotspots: HotspotData[];
+    merchandiseHotspots?: HotspotData[];
 }
 
 export enum CreatureType {

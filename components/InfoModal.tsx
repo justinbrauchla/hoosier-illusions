@@ -6,12 +6,18 @@ import { HotspotData } from '../types';
 interface InfoModalProps {
     data: HotspotData | null;
     onClose: () => void;
+    onPosterClick?: (title: string) => void;
+    merchandiseHotspots?: HotspotData[];
+    onHotspotClick?: (hotspot: HotspotData) => void;
+    hotspotIconUrl?: string;
 }
 
-export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
+export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose, onPosterClick, merchandiseHotspots, onHotspotClick, hotspotIconUrl }) => {
     const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
 
     if (!data) return null;
+
+    console.log('InfoModal open for:', data.id, data.label);
 
     // Check if this is Album Posters
     const isAlbumPosters = data.id === 'posters-left';
@@ -26,12 +32,19 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
     const hasNext = currentPosterIndex < posterUrls.length - 1;
 
     const goToPrevious = () => {
-        if (hasPrevious) setCurrentPosterIndex(prev => prev - 1);
+        setCurrentPosterIndex(prev => (prev > 0 ? prev - 1 : posterUrls.length - 1));
     };
 
     const goToNext = () => {
-        if (hasNext) setCurrentPosterIndex(prev => prev + 1);
+        setCurrentPosterIndex(prev => (prev < posterUrls.length - 1 ? prev + 1 : 0));
     };
+
+    const handlePosterClick = () => {
+        if (currentPoster && onPosterClick) {
+            onPosterClick(currentPoster.title);
+        }
+    };
+
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
@@ -48,21 +61,13 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                 <button
 
                                     onClick={goToPrevious}
-                                    disabled={!hasPrevious}
-                                    className={`p-1 rounded-full transition-colors ${hasPrevious
-                                        ? 'text-white hover:bg-white/20'
-                                        : 'text-white/30 cursor-not-allowed'
-                                        }`}
+                                    className="p-1 rounded-full transition-colors text-white hover:bg-white/20"
                                 >
                                     <ChevronLeft size={24} />
                                 </button>
                                 <button
                                     onClick={goToNext}
-                                    disabled={!hasNext}
-                                    className={`p-1 rounded-full transition-colors ${hasNext
-                                        ? 'text-white hover:bg-white/20'
-                                        : 'text-white/30 cursor-not-allowed'
-                                        }`}
+                                    className="p-1 rounded-full transition-colors text-white hover:bg-white/20"
                                 >
                                     <ChevronRight size={24} />
                                 </button>
@@ -88,14 +93,17 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                     // Full image display for Album Posters with video player behind
                     <div className="flex-1 overflow-hidden relative flex items-center justify-center p-4 min-h-0">
                         {/* Wrapper that sizes to the overlay image */}
-                        <div className="relative inline-block max-w-full max-h-full">
+                        <div
+                            className="relative inline-block max-w-full max-h-full cursor-pointer group"
+                            onClick={handlePosterClick}
+                        >
                             {/* Background poster container with 4:5 aspect ratio */}
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div
                                     className="relative"
                                     style={{
                                         aspectRatio: '4/5',
-                                        width: `${currentPoster?.posterWidth || 85}%`
+                                        width: `${currentPoster?.posterWidth || 100}%`
                                     }}
                                 >
                                     {/* Background image/video behind the poster - this rotates */}
@@ -107,14 +115,14 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                                 loop
                                                 muted
                                                 className="absolute inset-0 w-full h-full object-contain"
-                                                style={{ transform: `scale(${currentPoster.scale || 1})` }}
+                                                style={{ transform: `scale(${currentPoster.scale || 0.5})` }}
                                             />
                                         ) : (
                                             <img
                                                 src={currentPoster.imagePlaceholder}
                                                 alt="Background"
                                                 className="absolute inset-0 w-full h-full object-contain"
-                                                style={{ transform: `scale(${currentPoster.scale || 1})` }}
+                                                style={{ transform: `scale(${currentPoster.scale || 0.5})` }}
                                             />
                                         )
                                     ) : (
@@ -129,7 +137,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                 <img
                                     src={data.posterOverlayUrl}
                                     alt={data.label}
-                                    className="relative block w-auto h-auto max-w-full max-h-[calc(80vh-8rem)] object-contain z-10"
+                                    className="relative block w-auto h-auto max-w-full max-h-[calc(80vh-8rem)] object-contain z-10 pointer-events-none"
                                 />
                             ) : (
                                 <div className="w-64 h-80 flex items-center justify-center bg-black/50 border border-gold-500/30 relative z-10">
@@ -138,6 +146,13 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                     </p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                ) : data.label === 'Special Exhibits' ? (
+                    <div className="flex-1 flex items-center justify-center p-8 min-h-[200px]">
+                        <div className="text-center p-8 border border-gold-500/30 bg-black/50 rounded-lg backdrop-blur-sm shadow-[0_0_30px_rgba(212,175,55,0.1)]">
+                            <h3 className="text-2xl font-serif text-gold-500 mb-2">Coming Soon</h3>
+                            <p className="text-white/60 font-serif">This exhibit is currently under construction.</p>
                         </div>
                     </div>
                 ) : (
@@ -153,7 +168,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                         href={content.linkUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="block w-full h-48 bg-gray-900 rounded border border-gold-600/20 relative overflow-hidden group cursor-pointer"
+                                        className="block w-full aspect-square bg-gray-900 rounded border border-gold-600/20 relative overflow-hidden group cursor-pointer"
                                     >
                                         {content.imagePlaceholder?.startsWith('http') ? (
                                             <img
@@ -175,7 +190,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ data, onClose }) => {
                                         </div>
                                     </a>
                                 ) : (
-                                    <div className="w-full h-48 bg-gray-900 rounded border border-gold-600/20 flex items-center justify-center relative overflow-hidden group">
+                                    <div className="w-full aspect-square bg-gray-900 rounded border border-gold-600/20 flex items-center justify-center relative overflow-hidden group">
                                         {content.imagePlaceholder?.startsWith('http') ? (
                                             <img
                                                 src={content.imagePlaceholder}

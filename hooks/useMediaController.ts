@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 
-export const useMediaController = (audioSrc: string | null, initialMuted: boolean = false) => {
+export const useMediaController = (audioSrc: string | null, initialMuted: boolean = false, autoPlay: boolean = true) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(initialMuted);
 
     useEffect(() => {
-        if (audioSrc) {
+        if (audioSrc && autoPlay) {
             setIsPlaying(true);
         } else {
             setIsPlaying(false);
         }
-    }, [audioSrc]);
+    }, [audioSrc, autoPlay]);
 
     useEffect(() => {
         const audio = audioRef.current;

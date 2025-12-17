@@ -61,6 +61,71 @@ export const defaultMappings: Mappings = {
         showInDropdown: true,
         muteVideo: true,
     },
+    'cole porter': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Cole%20Porter.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'dan toler': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Dan%20Toler.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'dreamers road': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Dreamers%20Road.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'hoagy carmichael': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Hoagy%20Carmichael.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'hollywood\'s roar': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Hollywood%27s%20Roar.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'in the haze of the night': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/In%20The%20Haze%20Of%20The%20Night.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'james dean': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/James%20Dean.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'kurt vonnegut jr.': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Kurt%20Vonnegut%20Jr..mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'midnight check-in': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Midnight%20Check-In.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'southern road blues': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Southern%20Road%20Blues.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'tralfamadore blues': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Tralfamadore%20Blues.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'wes montgomery': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Wes%20Montgomery.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
+    'zoo promo': {
+        audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Zoo%20Promo.mp3',
+        showInDropdown: true,
+        muteVideo: true,
+    },
 };
 
 export const DEFAULT_VIDEO_SRC = 'https://storage.googleapis.com/hoosierillusionsvideos/WelcomeToHoosierIllusions.mp4';
@@ -71,6 +136,7 @@ export const DEFAULT_THEATER_CONFIG = {
 
 export const DEFAULT_HOTSPOT_CONFIG = {
     hotspotIconUrl: "https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png",
+    merchandiseHotspotIconUrl: "https://storage.googleapis.com/hoosierillusionsimages/OwlBlackTransparent.png",
     hotspots: [
         {
             id: 'posters-left',
@@ -82,22 +148,36 @@ export const DEFAULT_HOTSPOT_CONFIG = {
             posterOverlayUrl: 'https://storage.googleapis.com/hoosierillusionsimages/Generated%20Image%20November%2021%2C%202025%20-%206_15AM.png',
             contents: [
                 {
-                    title: 'The Hall of Legends',
-                    description: 'Ancient posters depicting the great illusionists of the 19th century. Some say their eyes follow you as you move across the room.',
+                    title: 'Hoosier Holidays',
+                    description: 'A festive collection of holiday classics and seasonal favorites from Hoosier Illusions Studio.',
                     imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/Generated%20Image%20November%2021%2C%202025%20-%206_18AM.png',
-                    linkUrl: ""
+                    linkUrl: "",
+                    scale: 0.5,
+                    posterWidth: 100
                 },
                 {
-                    title: 'The Vanishing Elephant',
-                    description: 'A faded lithograph advertising the impossible feat performed in 1918. The elephant looks surprisingly happy.',
-                    imagePlaceholder: 'Elephant Trick',
-                    linkUrl: ""
+                    title: 'Deadspeak',
+                    description: 'Mysterious transmissions from beyond the veil. A haunting audio experience.',
+                    imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png',
+                    linkUrl: "",
+                    scale: 0.5,
+                    posterWidth: 100
                 },
                 {
-                    title: 'Midnight Matinee',
-                    description: 'A poster for a show that supposedly happens only on leap years. The date is always blurred.',
-                    imagePlaceholder: 'Midnight Show',
-                    linkUrl: ""
+                    title: 'The Illusionists Gambit',
+                    description: 'A theatrical journey through magic, mystery, and musical mastery.',
+                    imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png',
+                    linkUrl: "",
+                    scale: 0.5,
+                    posterWidth: 100
+                },
+                {
+                    title: 'Fauna the Musical',
+                    description: 'An enchanting musical journey through the natural world.',
+                    imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png',
+                    linkUrl: "",
+                    scale: 0.5,
+                    posterWidth: 100
                 }
             ]
         },
@@ -151,5 +231,6 @@ export const DEFAULT_HOTSPOT_CONFIG = {
                 }
             ]
         }
-    ]
+    ],
+    merchandiseHotspots: []
 };

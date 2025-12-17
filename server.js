@@ -90,6 +90,71 @@ const defaultMappings = {
     showInDropdown: true,
     muteVideo: true,
   },
+  'cole porter': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Cole%20Porter.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'dan toler': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Dan%20Toler.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'dreamers road': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Dreamers%20Road.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'hoagy carmichael': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Hoagy%20Carmichael.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'hollywood\'s roar': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Hollywood%27s%20Roar.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'in the haze of the night': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/In%20The%20Haze%20Of%20The%20Night.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'james dean': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/James%20Dean.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'kurt vonnegut jr.': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Kurt%20Vonnegut%20Jr..mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'midnight check-in': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Midnight%20Check-In.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'southern road blues': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Southern%20Road%20Blues.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'tralfamadore blues': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Tralfamadore%20Blues.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'wes montgomery': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Wes%20Montgomery.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
+  'zoo promo': {
+    audioUrl: 'https://storage.googleapis.com/hoosierillusionsaudio/Zoo%20Promo.mp3',
+    showInDropdown: true,
+    muteVideo: true,
+  },
 };
 
 // Unified Config Endpoint
@@ -112,6 +177,49 @@ app.get('/api/config', async (req, res) => {
     const finalMappings = Object.fromEntries(
       Object.entries(mergedMappings).filter(([_, value]) => !value._deleted)
     );
+
+    // Fetch On-Demand tracks and merge them
+    try {
+      const onDemandResponse = await fetch('https://stream.hoosierillusions.com/api/station/hoosier-illusions/ondemand');
+      if (onDemandResponse.ok) {
+        const onDemandData = await onDemandResponse.json();
+        onDemandData.forEach(track => {
+          if (track.media && track.media.title) {
+            const key = track.media.title.trim().toLowerCase();
+            const audioUrl = `/api/proxy-audio?url=https://stream.hoosierillusions.com${track.download_url}`;
+
+            if (finalMappings[key]) {
+              // Update existing mapping's URL if needed, but preserve user settings
+              // Only update if it's a placeholder or different
+              if (!finalMappings[key].audioUrl || finalMappings[key].audioUrl.includes('/ondemand/download/')) {
+                finalMappings[key].audioUrl = audioUrl;
+              }
+              // Backfill metadata if missing
+              if (!finalMappings[key].imageUrl && track.media.art) {
+                finalMappings[key].imageUrl = track.media.art;
+              }
+              if (!finalMappings[key].title && track.media.title) {
+                finalMappings[key].title = track.media.title;
+              }
+            } else {
+              // Add new mapping for on-demand track
+              finalMappings[key] = {
+                audioUrl: audioUrl,
+                showInDropdown: true, // Default to true (searchable)
+                muteVideo: true,
+                title: track.media.title,
+                album: track.media.album,
+                artist: track.media.artist,
+                imageUrl: track.media.art || ''
+              };
+            }
+          }
+        });
+      }
+    } catch (fetchError) {
+      console.error('Failed to fetch On-Demand list in /api/config:', fetchError);
+      // Continue with existing mappings if fetch fails
+    }
 
     res.set('Cache-Control', 'public, max-age=10'); // Cache for 10s
     res.json(finalMappings);
@@ -142,7 +250,7 @@ app.get('/api/custom-media', async (req, res) => {
         onDemandData.forEach(track => {
           if (track.media && track.media.title) {
             const key = track.media.title.trim().toLowerCase();
-            const audioUrl = `https://stream.hoosierillusions.com${track.download_url}`;
+            const audioUrl = `/api/proxy-audio?url=https://stream.hoosierillusions.com${track.download_url}`;
 
             if (mappings[key]) {
               // Update existing mapping's URL, preserve other settings
@@ -251,6 +359,7 @@ app.post('/api/save-mapping', async (req, res) => {
       videoUrl: videoUrl?.trim(),
       audioUrl: audioUrl?.trim(),
       panoUrl: panoUrl?.trim(),
+      imageUrl: imageUrl?.trim(),
       showInDropdown,
       muteVideo,
       playFullscreen
@@ -359,24 +468,39 @@ app.get('/api/hotspot-config', async (req, res) => {
             left: 5,
             width: 10,
             height: 15,
+            posterOverlayUrl: 'https://storage.googleapis.com/hoosierillusionsimages/Generated%20Image%20November%2021%2C%202025%20-%206_15AM.png',
             contents: [
               {
-                title: 'The Hall of Legends',
-                description: 'Ancient posters depicting the great illusionists of the 19th century. Some say their eyes follow you as you move across the room.',
+                title: 'Hoosier Holidays',
+                description: 'A festive collection of holiday classics and seasonal favorites from Hoosier Illusions Studio.',
                 imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/Generated%20Image%20November%2021%2C%202025%20-%206_18AM.png',
-                linkUrl: ""
+                linkUrl: "",
+                scale: 0.5,
+                posterWidth: 100
               },
               {
-                title: 'The Vanishing Elephant',
-                description: 'A faded lithograph advertising the impossible feat performed in 1918. The elephant looks surprisingly happy.',
-                imagePlaceholder: 'Elephant Trick',
-                linkUrl: ""
+                title: 'Deadspeak',
+                description: 'Mysterious transmissions from beyond the veil. A haunting audio experience.',
+                imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png',
+                linkUrl: "",
+                scale: 0.5,
+                posterWidth: 100
               },
               {
-                title: 'Midnight Matinee',
-                description: 'A poster for a show that supposedly happens only on leap years. The date is always blurred.',
-                imagePlaceholder: 'Midnight Show',
-                linkUrl: ""
+                title: 'The Illusionists Gambit',
+                description: 'A theatrical journey through magic, mystery, and musical mastery.',
+                imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png',
+                linkUrl: "",
+                scale: 0.5,
+                posterWidth: 100
+              },
+              {
+                title: 'Fauna the Musical',
+                description: 'An enchanting musical journey through the natural world.',
+                imagePlaceholder: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png',
+                linkUrl: "",
+                scale: 0.5,
+                posterWidth: 100
               }
             ]
           },
@@ -650,6 +774,75 @@ app.get('/api/album-art', async (req, res) => {
   } catch (error) {
     console.error('Album art proxy error:', error);
     res.redirect('https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png');
+  }
+});
+
+// Proxy for Audio to handle Content-Disposition and Range requests
+app.get('/api/proxy-audio', async (req, res) => {
+  const rawUrl = req.query.url;
+  if (!rawUrl) return res.status(400).send('Missing url');
+
+  const audioUrl = decodeURIComponent(rawUrl);
+  console.log(`[Proxy] Requesting: ${audioUrl}`);
+  if (req.headers.range) {
+    console.log(`[Proxy] Range request: ${req.headers.range}`);
+  }
+
+  try {
+    const headers = {};
+    if (req.headers.range) {
+      headers['Range'] = req.headers.range;
+    }
+
+    // Use a custom agent if needed, but default fetch should work
+    const response = await fetch(audioUrl, { headers });
+
+    if (!response.ok && response.status !== 206) {
+      console.error(`[Proxy] Upstream error ${response.status} for ${audioUrl}`);
+      throw new Error(`Failed to fetch audio: ${response.status}`);
+    }
+
+    // Forward Content-Type
+    const contentType = response.headers.get('content-type');
+    if (contentType) res.set('Content-Type', contentType);
+
+    // Ensure Content-Disposition is inline
+    res.set('Content-Disposition', 'inline');
+
+    // Forward Content-Range if available
+    const contentRange = response.headers.get('content-range');
+    if (contentRange) {
+      res.set('Content-Range', contentRange);
+    }
+
+    // DO NOT forward Content-Length when piping, as it can cause mismatches if the stream is transformed
+    // or if the upstream length differs from what node-fetch delivers.
+    // Let Express/Node handle the transfer encoding.
+
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Accept-Ranges', 'bytes');
+
+    // Set status code (200 or 206)
+    res.status(response.status);
+
+    // Stream the response
+    const { Readable } = await import('stream');
+    // @ts-ignore
+    const nodeStream = Readable.fromWeb(response.body);
+
+    nodeStream.on('error', (err) => {
+      console.error('[Proxy] Stream error:', err);
+      if (!res.headersSent) res.status(500).end();
+      else res.end();
+    });
+
+    nodeStream.pipe(res);
+
+  } catch (error) {
+    console.error('[Proxy] Error:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Failed to proxy audio');
+    }
   }
 });
 

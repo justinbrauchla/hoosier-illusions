@@ -1,0 +1,19 @@
+[
+    {
+        "origin": [
+            "https://hoosierillusions.com",
+            "http://localhost:5173",
+            "https://hoosierillusions-170449091581.us-central1.run.app"
+        ],
+        "method": [
+            "GET",
+            "HEAD",
+            "OPTIONS"
+        ],
+        "responseHeader": [
+            "Content-Type",
+            "Access-Control-Allow-Origin"
+        ],
+        "maxAgeSeconds": 3600
+    }
+]

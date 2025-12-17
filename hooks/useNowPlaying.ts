@@ -41,8 +41,8 @@ export const useNowPlaying = (
                         null;
                     setAlbumArt(art);
 
-                    // Only update video/mapping if NOT in initial state
-                    if (!isInitialState && nowPlayingData?.now_playing?.song?.title) {
+                    // Update video/mapping based on currently playing song
+                    if (nowPlayingData?.now_playing?.song?.title) {
                         const songTitle = nowPlayingData.now_playing.song.title.trim().toLowerCase();
                         const songMapping = mappings[songTitle];
                         if (songMapping) {

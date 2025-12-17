@@ -191,44 +191,35 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ config, onSave, onClose,
                           {hotspot.id === 'posters-left' ? (
                             // Simplified UI for Album Posters
                             <div className="space-y-3">
-                              <p className="text-xs text-gray-500 italic">Add multiple image/video URLs that will play behind the poster cutout.</p>
+                              <p className="text-xs text-gray-500 italic">Configure album posters. Title must match AzuraCast album name exactly.</p>
                               {hotspot.contents.map((content, cIndex) => (
-                                <div key={cIndex} className="flex items-center gap-3 bg-gray-900/30 p-2 rounded border border-gray-800">
-                                  <span className="text-gray-500 text-xs font-mono w-6 text-right">{cIndex + 1}.</span>
+                                <div key={cIndex} className="bg-gray-900/30 p-3 rounded border border-gray-800 space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-gray-500 text-xs font-mono w-6">{cIndex + 1}.</span>
+                                    <input
+                                      type="text"
+                                      placeholder="Title (must match AzuraCast album)"
+                                      value={content.title}
+                                      onChange={(e) => updateContent(hIndex, cIndex, 'title', e.target.value)}
+                                      className="flex-1 bg-transparent border-b border-gray-700 text-sm text-gold-100 font-semibold focus:border-gold-500 focus:outline-none py-1"
+                                    />
+                                    <button onClick={() => removeContent(hIndex, cIndex)} className="text-gray-600 hover:text-red-500 p-1 hover:bg-red-900/20 rounded">
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                  <textarea
+                                    placeholder="Description"
+                                    value={content.description}
+                                    onChange={(e) => updateContent(hIndex, cIndex, 'description', e.target.value)}
+                                    className="w-full bg-transparent border border-gray-700 rounded p-2 text-xs text-gray-400 focus:border-gold-500 focus:outline-none h-16"
+                                  />
                                   <input
                                     type="text"
                                     placeholder="Background Image/Video URL"
                                     value={content.imagePlaceholder}
                                     onChange={(e) => updateContent(hIndex, cIndex, 'imagePlaceholder', e.target.value)}
-                                    className="flex-1 bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1"
+                                    className="w-full bg-transparent border-b border-gray-700 text-xs text-gold-100 focus:border-gold-500 focus:outline-none py-1"
                                   />
-                                  <div className="flex items-center gap-2 w-32 border-l border-gray-800 pl-2">
-                                    <span className="text-[10px] text-gray-500 uppercase">Width %</span>
-                                    <input
-                                      type="number"
-                                      step="1"
-                                      min="10"
-                                      max="100"
-                                      value={content.posterWidth || 85}
-                                      onChange={(e) => updateContent(hIndex, cIndex, 'posterWidth', parseFloat(e.target.value))}
-                                      className="w-full bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1 text-center"
-                                    />
-                                  </div>
-                                  <div className="flex items-center gap-2 w-24 border-l border-gray-800 pl-2">
-                                    <span className="text-[10px] text-gray-500 uppercase">Scale</span>
-                                    <input
-                                      type="number"
-                                      step="0.05"
-                                      min="0.1"
-                                      max="2.0"
-                                      value={content.scale || 1}
-                                      onChange={(e) => updateContent(hIndex, cIndex, 'scale', parseFloat(e.target.value))}
-                                      className="w-full bg-transparent border-b border-gray-700 text-sm text-gold-100 focus:border-gold-500 focus:outline-none py-1 text-center"
-                                    />
-                                  </div>
-                                  <button onClick={() => removeContent(hIndex, cIndex)} className="text-gray-600 hover:text-red-500 p-1 hover:bg-red-900/20 rounded">
-                                    <Trash2 size={14} />
-                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -273,6 +264,245 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ config, onSave, onClose,
                               </div>
                             ))
                           )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Merchandise Overlay Hotspots Editor */}
+          <section>
+            <div className="flex justify-between items-end mb-4">
+              <h2 className="text-lg font-serif text-gold-100 border-b border-gold-600/20 pb-2">Merchandise Overlay Hotspots</h2>
+              <button
+                onClick={() => {
+                  const newHotspots = [...(formData.merchandiseHotspots || [])];
+                  newHotspots.push({
+                    id: `merch-${Date.now()}`,
+                    label: 'New Merch Item',
+                    top: 50,
+                    left: 50,
+                    width: 10,
+                    height: 10,
+                    contents: []
+                  });
+                  setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                }}
+                className="text-xs text-gold-500 hover:text-gold-300 flex items-center gap-1"
+              >
+                <Plus size={12} /> Add Hotspot
+              </button>
+            </div>
+
+            {/* Merchandise Hotspot Icon URL */}
+            <div className="mb-4">
+              <label className="block text-xs text-gold-300 mb-1">Merchandise Hotspot Icon URL</label>
+              <input
+                type="text"
+                value={formData.merchandiseHotspotIconUrl || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, merchandiseHotspotIconUrl: e.target.value }))}
+                placeholder="https://storage.googleapis.com/hoosierillusionsimages/OwlBlackTransparent.png"
+                className="w-full px-2 py-1 bg-black/30 border border-gold-600/20 text-gold-100 text-xs rounded"
+              />
+              <p className="text-xs text-gray-500 mt-1">Icon displayed on merchandise overlay hotspots (e.g., beanie, etc.)</p>
+            </div>
+
+            <div className="space-y-4">
+              {(formData.merchandiseHotspots || []).map((hotspot, hIndex) => (
+                <div key={hotspot.id} className="bg-black/50 border border-gray-800 rounded-lg overflow-hidden">
+                  {/* Hotspot Header */}
+                  <div
+                    className="p-4 bg-gray-900/50 flex justify-between items-center cursor-pointer hover:bg-gray-900 transition-colors"
+                    onClick={() => setExpandedHotspot(expandedHotspot === hotspot.id ? null : hotspot.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {expandedHotspot === hotspot.id ? <ChevronDown size={16} className="text-gold-500" /> : <ChevronRight size={16} className="text-gray-500" />}
+                      <span className="font-bold text-gray-200">{hotspot.label || 'Unnamed Hotspot'}</span>
+                      <span className="text-xs text-gray-600 mono">({hotspot.top}%, {hotspot.left}%)</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm('Delete this hotspot?')) {
+                          const newHotspots = [...(formData.merchandiseHotspots || [])];
+                          newHotspots.splice(hIndex, 1);
+                          setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                        }
+                      }}
+                      className="text-gray-600 hover:text-red-500 p-1"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  {/* Hotspot Body */}
+                  {expandedHotspot === hotspot.id && (
+                    <div className="p-6 border-t border-gray-800 space-y-6 animate-fade-in">
+                      {/* Position & Label */}
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="md:col-span-2">
+                          <label className="text-xs uppercase text-gray-500 block mb-1">Label</label>
+                          <input
+                            type="text"
+                            value={hotspot.label}
+                            onChange={(e) => {
+                              const newHotspots = [...(formData.merchandiseHotspots || [])];
+                              newHotspots[hIndex] = { ...newHotspots[hIndex], label: e.target.value };
+                              setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                            }}
+                            className="w-full bg-black border border-gray-700 rounded p-2 text-sm text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs uppercase text-gray-500 block mb-1">Top %</label>
+                          <input
+                            type="number"
+                            value={hotspot.top}
+                            onChange={(e) => {
+                              const newHotspots = [...(formData.merchandiseHotspots || [])];
+                              newHotspots[hIndex] = { ...newHotspots[hIndex], top: Number(e.target.value) };
+                              setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                            }}
+                            className="w-full bg-black border border-gray-700 rounded p-2 text-sm text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs uppercase text-gray-500 block mb-1">Left %</label>
+                          <input
+                            type="number"
+                            value={hotspot.left}
+                            onChange={(e) => {
+                              const newHotspots = [...(formData.merchandiseHotspots || [])];
+                              newHotspots[hIndex] = { ...newHotspots[hIndex], left: Number(e.target.value) };
+                              setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                            }}
+                            className="w-full bg-black border border-gray-700 rounded p-2 text-sm text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs uppercase text-gray-500 block mb-1">Width %</label>
+                          <input
+                            type="number"
+                            value={hotspot.width}
+                            onChange={(e) => {
+                              const newHotspots = [...(formData.merchandiseHotspots || [])];
+                              newHotspots[hIndex] = { ...newHotspots[hIndex], width: Number(e.target.value) };
+                              setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                            }}
+                            className="w-full bg-black border border-gray-700 rounded p-2 text-sm text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs uppercase text-gray-500 block mb-1">Height %</label>
+                          <input
+                            type="number"
+                            value={hotspot.height}
+                            onChange={(e) => {
+                              const newHotspots = [...(formData.merchandiseHotspots || [])];
+                              newHotspots[hIndex] = { ...newHotspots[hIndex], height: Number(e.target.value) };
+                              setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                            }}
+                            className="w-full bg-black border border-gray-700 rounded p-2 text-sm text-white"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Contents List */}
+                      <div className="bg-black/40 rounded border border-gray-800 p-4">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-sm font-bold text-gray-400 uppercase">Content Cards</h4>
+                          <button
+                            onClick={() => {
+                              const newHotspots = [...(formData.merchandiseHotspots || [])];
+                              newHotspots[hIndex].contents.push({
+                                title: 'New Item',
+                                description: 'Description...',
+                                imagePlaceholder: 'Placeholder',
+                                linkUrl: ''
+                              });
+                              setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                            }}
+                            className="text-xs text-gold-500 hover:text-gold-300 flex items-center gap-1"
+                          >
+                            <Plus size={12} /> Add Card
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          {hotspot.contents.map((content, cIndex) => (
+                            <div key={cIndex} className="grid grid-cols-12 gap-4 items-start border-b border-gray-800 pb-4 last:border-0 last:pb-0">
+                              <div className="col-span-11 space-y-2">
+                                <input
+                                  type="text"
+                                  placeholder="Title"
+                                  value={content.title}
+                                  onChange={(e) => {
+                                    const newHotspots = [...(formData.merchandiseHotspots || [])];
+                                    const newContents = [...newHotspots[hIndex].contents];
+                                    newContents[cIndex] = { ...newContents[cIndex], title: e.target.value };
+                                    newHotspots[hIndex].contents = newContents;
+                                    setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                                  }}
+                                  className="w-full bg-transparent border-b border-gray-700 text-gold-100 font-serif focus:border-gold-500 focus:outline-none"
+                                />
+                                <textarea
+                                  placeholder="Description"
+                                  value={content.description}
+                                  onChange={(e) => {
+                                    const newHotspots = [...(formData.merchandiseHotspots || [])];
+                                    const newContents = [...newHotspots[hIndex].contents];
+                                    newContents[cIndex] = { ...newContents[cIndex], description: e.target.value };
+                                    newHotspots[hIndex].contents = newContents;
+                                    setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                                  }}
+                                  className="w-full bg-transparent border border-gray-700 rounded p-2 text-sm text-gray-400 focus:border-gold-500 focus:outline-none h-20"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Image Placeholder / Poster URL"
+                                    value={content.imagePlaceholder}
+                                    onChange={(e) => {
+                                      const newHotspots = [...(formData.merchandiseHotspots || [])];
+                                      const newContents = [...newHotspots[hIndex].contents];
+                                      newContents[cIndex] = { ...newContents[cIndex], imagePlaceholder: e.target.value };
+                                      newHotspots[hIndex].contents = newContents;
+                                      setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                                    }}
+                                    className="w-full bg-transparent border-b border-gray-700 text-xs text-gray-500 focus:border-gray-500 focus:outline-none"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Image Link URL (Optional)"
+                                    value={content.linkUrl || ''}
+                                    onChange={(e) => {
+                                      const newHotspots = [...(formData.merchandiseHotspots || [])];
+                                      const newContents = [...newHotspots[hIndex].contents];
+                                      newContents[cIndex] = { ...newContents[cIndex], linkUrl: e.target.value };
+                                      newHotspots[hIndex].contents = newContents;
+                                      setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                                    }}
+                                    className="w-full bg-transparent border-b border-gray-700 text-xs text-blue-400 focus:border-blue-500 focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-span-1 text-right">
+                                <button
+                                  onClick={() => {
+                                    const newHotspots = [...(formData.merchandiseHotspots || [])];
+                                    newHotspots[hIndex].contents = newHotspots[hIndex].contents.filter((_, i) => i !== cIndex);
+                                    setFormData(prev => ({ ...prev, merchandiseHotspots: newHotspots }));
+                                  }}
+                                  className="text-gray-600 hover:text-red-500"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>

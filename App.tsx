@@ -8,6 +8,7 @@ import { useMediaController } from './hooks/useMediaController';
 import PanoViewer from './components/PanoViewer';
 import { HotspotLayer } from './components/HotspotLayer';
 import { InfoModal } from './components/InfoModal';
+import { MerchandiseOverlay } from './components/MerchandiseOverlay';
 import { GameConfig, HotspotData } from './types';
 import { Play, Maximize, Minimize } from 'lucide-react';
 // ...
@@ -50,6 +51,7 @@ const App: React.FC = () => {
   const [trigger, setTrigger] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(true);
+  const [isMerchandiseActive, setIsMerchandiseActive] = useState(false);
   const [showInput, setShowInput] = useState(false); // Hide input initially
   const [currentMapping, setCurrentMapping] = useState<MappingValue | null>(null);
   const [chatResponse, setChatResponse] = useState<string | null>(null);
@@ -58,6 +60,18 @@ const App: React.FC = () => {
 
   const [isInitialState, setIsInitialState] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile device on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Hotspot State
   const [gameConfig, setGameConfig] = useState<GameConfig>(DEFAULT_HOTSPOT_CONFIG);
@@ -82,18 +96,22 @@ const App: React.FC = () => {
     const height = parseFloat(videoPosition.height) || 0;
 
     return {
-      top: `${top - height / 2}%`,
-      left: `${left - width / 2}%`,
-      width: `${width}%`,
-      height: `${height}%`
+      top: `${top - height / 2}% `,
+      left: `${left - width / 2}% `,
+      width: `${width}% `,
+      height: `${height}% `
     };
   };
 
+  const [mobilePlayEnabled, setMobilePlayEnabled] = useState(false);
+
   // Custom hooks - Autoplay muted to allow browser autoplay
-  const { audioRef, isMuted, setIsMuted, play } = useMediaController(audioSrc, true);
+  const { audioRef, isMuted, setIsMuted, play, setIsPlaying, isPlaying } = useMediaController(audioSrc, true, isMobile ? mobilePlayEnabled : true);
   const { nowPlaying, albumArt } = useNowPlaying(audioSrc, mappings, setVideoSrc, setImageSrc, setCurrentMapping, isInitialState);
 
   // Handle Input Window State
+  const [isInputWindowOpen, setIsInputWindowOpen] = useState(false);
+
   const handleOpenInput = () => {
     setShowInput(true);
     setIsMuted(true);
@@ -124,7 +142,15 @@ const App: React.FC = () => {
   };
 
   const handleHotspotClick = (hotspot: HotspotData) => {
-    setActiveHotspot(hotspot);
+    console.log('Clicked hotspot:', hotspot);
+    // Check for 'merchandise' ID or 'merch' in label (case insensitive)
+    if (hotspot.id === 'merchandise' || hotspot.label.toLowerCase().includes('merch')) {
+      console.log('Activating Merchandise Overlay');
+      setIsMerchandiseActive(true);
+    } else {
+      console.log('Setting active hotspot:', hotspot);
+      setActiveHotspot(hotspot);
+    }
   };
 
   // Fix mobile viewport height on mount and resize
@@ -220,7 +246,11 @@ const App: React.FC = () => {
     // Load hotspot config
     fetch('/api/hotspot-config')
       .then(res => res.json())
-      .then(config => setGameConfig(config))
+      .then(config => setGameConfig({
+        ...DEFAULT_HOTSPOT_CONFIG,
+        ...config,
+        merchandiseHotspots: config.merchandiseHotspots || []
+      }))
       .catch(err => console.error('Failed to load hotspot config:', err));
   }, []);
 
@@ -332,7 +362,7 @@ const App: React.FC = () => {
           );
 
           if (track && track.download_url) {
-            newAudioUrl = `https://stream.hoosierillusions.com${track.download_url}`;
+            newAudioUrl = `/api/proxy-audio?url=https://stream.hoosierillusions.com${track.download_url}`;
             console.log('🎵 Found track, download URL:', newAudioUrl);
           } else {
             console.log('🎵 Track not found in on-demand library');
@@ -346,7 +376,7 @@ const App: React.FC = () => {
         }
       }
 
-      // Force reload of stream by appending timestamp to ensure live edge playback
+      // Add timestamp to stream URL to prevent caching and ensure live edge playback
       if (newAudioUrl && newAudioUrl.includes('radio.mp3')) {
         const separator = newAudioUrl.includes('?') ? '&' : '?';
         newAudioUrl = `${newAudioUrl}${separator}t=${Date.now()}`;
@@ -354,9 +384,27 @@ const App: React.FC = () => {
 
       console.log('🎵 Final audio URL:', newAudioUrl);
       setAudioSrc(newAudioUrl);
+      setVideoSrc(mapping.videoUrl || null);
+      setImageSrc(mapping.imageUrl || null);
       setPanoSrc(mapping.panoUrl || null);
       setError(null);
+
+      // Clear playlist when playing a single trigger
+      setPlaylist([]);
+      setCurrentTrackIndex(-1);
+
+      // Update Now Playing state
+      setCurrentMapping({
+        ...mapping,
+        audioUrl: newAudioUrl || '',
+        videoUrl: mapping.videoUrl || '',
+        imageUrl: mapping.imageUrl || '',
+        album: mapping.album,
+        artist: mapping.artist
+      });
+
     } else {
+      console.warn(`❌ No mapping found for "${key}"`);
       setCurrentMapping(null);
       setVideoSrc(null);
       setImageSrc(null);
@@ -476,9 +524,278 @@ const App: React.FC = () => {
 
 
 
+  // Playlist State
+  const [playlist, setPlaylist] = useState<any[]>([]);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+
+  const handleTrackEnded = () => {
+    if (playlist.length > 0) {
+      let nextIndex = currentTrackIndex + 1;
+
+      // Loop playlist if at the end
+      if (nextIndex >= playlist.length) {
+        nextIndex = 0;
+      }
+
+      setCurrentTrackIndex(nextIndex);
+      const nextTrack = playlist[nextIndex];
+
+      console.log('⏭️ Playing next track:', nextTrack.media.title);
+
+      // Play next track
+      // Play next track
+      const audioUrl = `https://storage.googleapis.com/hoosierillusionsaudio/${encodeURIComponent(nextTrack.media.title)}.mp3`;
+      const videoUrl = mappings[nextTrack.media.title.toLowerCase()]?.videoUrl;
+      const imageUrl = mappings[nextTrack.media.title.toLowerCase()]?.imageUrl || nextTrack.media.art;
+
+      setAudioSrc(audioUrl);
+      setVideoSrc(videoUrl || null);
+      setImageSrc(imageUrl || null);
+
+      // Update metadata
+      setCurrentMapping({
+        audioUrl,
+        videoUrl: videoUrl || '',
+        imageUrl: imageUrl || '',
+        showInDropdown: true,
+        muteVideo: true,
+        title: nextTrack.media.title,
+        album: nextTrack.media.album,
+        artist: nextTrack.media.artist
+      });
+    } else {
+      console.log('🏁 Playlist ended');
+    }
+  };
+
+  const handlePosterClick = async (posterTitle: string) => {
+    console.log('🖼️ Poster clicked:', posterTitle);
+
+    try {
+      // 1. Fetch all on-demand tracks
+      const response = await fetch('https://stream.hoosierillusions.com/api/station/hoosier-illusions/ondemand');
+      if (!response.ok) throw new Error('Failed to fetch on-demand tracks');
+
+      const tracks = await response.json();
+      console.log(`📀 Total on-demand tracks available: ${tracks.length}`);
+
+      // Log first track structure for debugging
+      if (tracks.length > 0) {
+        console.log('📋 Sample track structure:', {
+          title: tracks[0].media?.title,
+          album: tracks[0].media?.album,
+          playlists: tracks[0].media?.playlists,
+          artist: tracks[0].media?.artist
+        });
+      }
+
+      // 2. Filter tracks matching the poster title
+      const searchTitle = posterTitle.toLowerCase().trim();
+      console.log(`🔍 Searching for: "${searchTitle}"`);
+
+      const matchingTracks = tracks.filter((t: any) => {
+        // Check Album
+        const album = t.media?.album?.toLowerCase() || '';
+        if (album && (album.includes(searchTitle) || searchTitle.includes(album))) {
+          console.log(`✓ Album match: "${t.media.title}" (album: "${album}")`);
+          return true;
+        }
+
+        // Check Playlists - handle both array of strings and array of objects
+        if (t.media?.playlists && Array.isArray(t.media.playlists)) {
+          const playlistMatch = t.media.playlists.some((p: any) => {
+            const playlistName = typeof p === 'string' ? p : p.name;
+            return playlistName && playlistName.toLowerCase().includes(searchTitle);
+          });
+          if (playlistMatch) {
+            console.log(`✓ Playlist match: "${t.media.title}"`);
+            return true;
+          }
+        }
+
+        return false;
+      });
+
+      console.log(`📊 Matching tracks found: ${matchingTracks.length}`);
+
+      // Fallback: if no album/playlist match, look for exact title match
+      if (matchingTracks.length === 0) {
+        console.log('⚠️ No album/playlist matches, trying exact title match...');
+        const exactTrack = tracks.find((t: any) => t.media?.title?.toLowerCase() === searchTitle);
+        if (exactTrack) {
+          console.log(`✓ Found exact title match: "${exactTrack.media.title}"`);
+          matchingTracks.push(exactTrack);
+        }
+      }
+
+      if (matchingTracks.length > 0) {
+        console.log(`✅ Playing ${matchingTracks.length} tracks for "${posterTitle}"`);
+
+        // Sort tracks by title for consistency
+        matchingTracks.sort((a: any, b: any) => a.media.title.localeCompare(b.media.title));
+
+        // Set Playlist
+        setPlaylist(matchingTracks);
+        setCurrentTrackIndex(0);
+
+        // 3. Play the first track
+        const firstTrack = matchingTracks[0];
+
+        // Construct GCS URL from title
+        const trackTitle = firstTrack.media.title;
+        const gcsUrl = `https://storage.googleapis.com/hoosierillusionsaudio/${encodeURIComponent(trackTitle)}.mp3`;
+
+        console.log(`▶️ Playing: "${trackTitle}" from GCS: ${gcsUrl}`);
+
+        // Check for existing custom mapping for the first track
+        const trackKey = trackTitle.toLowerCase();
+        const existingMapping = mappings[trackKey];
+
+        let videoUrl = null;
+        let imageUrl = firstTrack.media.art || null;
+
+        if (existingMapping) {
+          if (existingMapping.videoUrl) videoUrl = existingMapping.videoUrl;
+          if (existingMapping.imageUrl) imageUrl = existingMapping.imageUrl;
+        }
+
+        // Update state to play
+        setAudioSrc(gcsUrl);
+        setVideoSrc(videoUrl);
+        setImageSrc(imageUrl);
+
+        // Set current mapping
+        setCurrentMapping({
+          audioUrl: gcsUrl,
+          videoUrl: videoUrl || '',
+          imageUrl: imageUrl || '',
+          showInDropdown: true,
+          muteVideo: true,
+          title: firstTrack.media.title,
+          album: firstTrack.media.album,
+          artist: firstTrack.media.artist
+        });
+        setIsInitialState(false);
+        setIsMuted(false);
+
+        // 4. Add ALL matching tracks to shortcuts, preserving existing mappings
+        const newMappings = { ...mappings };
+        let addedCount = 0;
+
+        matchingTracks.forEach((track: any) => {
+          if (track.media?.title) {
+            const key = track.media.title.toLowerCase();
+            const trackGcsUrl = `https://storage.googleapis.com/hoosierillusionsaudio/${encodeURIComponent(track.media.title)}.mp3`;
+
+            if (newMappings[key]) {
+              // Preserve existing mapping but ensure it shows in dropdown
+              newMappings[key] = {
+                ...newMappings[key],
+                showInDropdown: true
+              };
+            } else {
+              // Create new mapping
+              newMappings[key] = {
+                audioUrl: trackGcsUrl,
+                videoUrl: '',
+                imageUrl: track.media.art || '',
+                showInDropdown: true,
+                muteVideo: true,
+                title: track.media.title
+              };
+              addedCount++;
+            }
+          }
+        });
+
+        setMappings(newMappings);
+        console.log(`➕ Added/Updated shortcuts (added ${addedCount} new)`);
+        console.log('📝 Shortcuts added:', matchingTracks.map(t => t.media.title));
+
+        // Close the modal
+        setActiveHotspot(null);
+
+      } else {
+        console.error(`❌ No tracks found for poster: "${posterTitle}"`);
+        console.log('💡 Available albums:', [...new Set(tracks.map((t: any) => t.media?.album).filter(Boolean))]);
+        console.log('💡 Available playlists:', [...new Set(tracks.flatMap((t: any) => t.media?.playlists || []).map((p: any) => typeof p === 'string' ? p : p.name))]);
+      }
+
+    } catch (error) {
+      console.error('Error handling poster click:', error);
+    }
+  };
+
+  if (isMobile) {
+    const toggleMobilePlay = () => {
+      if (isPlaying) {
+        setAudioSrc(null);
+        setIsPlaying(false);
+        setMobilePlayEnabled(false);
+      } else {
+        setMobilePlayEnabled(true);
+        setAudioSrc('https://stream.hoosierillusions.com/listen/hoosier-illusions/radio.mp3');
+        setIsMuted(false);
+      }
+    };
+
+    const showPlayingState = isPlaying;
+
+    return (
+      <div className="fixed inset-0 bg-black flex flex-col items-center justify-start pt-32 p-8 text-center z-[9999]">
+        <audio ref={audioRef} onEnded={handleTrackEnded} />
+        <div
+          className="relative mb-8 w-64 h-64 rounded-full border-4 border-gold-500/30 shadow-[0_0_30px_rgba(212,175,55,0.2)] cursor-pointer group overflow-hidden flex-shrink-0"
+          onClick={toggleMobilePlay}
+        >
+          <img
+            src="https://storage.googleapis.com/hoosierillusionsimages/manlogo.jpeg"
+            alt="Hoosier Illusions"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+            {!showPlayingState && (
+              <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg transition-transform group-hover:scale-110">
+                <Play size={32} fill="black" className="text-black ml-1" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <h1 className="text-2xl font-serif text-gold-500 mb-4 flex-shrink-0">Hoosier Illusions</h1>
+
+        <div className="w-full max-w-xs mx-auto">
+          {isPlaying ? (
+            <div className="w-full text-left bg-black/40 p-4 rounded-lg backdrop-blur-sm">
+              {nowPlaying ? (
+                <>
+                  <p className="text-xs text-cyan-400 font-bold tracking-wider mb-1">LIVE STREAM</p>
+                  <h3 className="text-lg font-bold text-white truncate">{nowPlaying.now_playing.song.title}</h3>
+                  <p className="text-xs text-gray-400 truncate mb-3">
+                    {nowPlaying.now_playing.song.artist} - {nowPlaying.now_playing.song.album}
+                  </p>
+                  <div className="border-t border-white/10 pt-2">
+                    <p className="text-xs text-gray-500 font-bold tracking-wider mb-1">UP NEXT</p>
+                    <p className="text-sm text-gray-400 truncate">{nowPlaying.playing_next.song.title}</p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-center text-gray-400 text-sm">Loading stream details...</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-white/60 font-serif text-sm max-w-md mx-auto">
+              Visit us on a larger screen or download our mobile app for more<br />Hoosier Illusions!
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <audio ref={audioRef} loop />
+      <audio ref={audioRef} loop={false} onEnded={handleTrackEnded} />
       <div className="w-full h-full bg-black text-white flex flex-col items-center justify-center" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
         <div className="w-full h-full flex items-center justify-center">
           <main className="w-full h-full">
@@ -564,7 +881,6 @@ const App: React.FC = () => {
                                 src={effectiveImageSrc}
                                 alt="Cover"
                                 className="w-full h-full object-contain"
-                                crossOrigin="anonymous"
                                 onError={(e) => {
                                   e.currentTarget.src = 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png';
                                 }}
@@ -619,23 +935,40 @@ const App: React.FC = () => {
                           </div>
                         </div>
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 border border-gold-500/30 text-gold-100 text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap font-serif transform translate-y-2 group-hover:translate-y-0 shadow-lg z-20">
-                          Albums
+                          Stream
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Hotspot Layer - Always visible except in browser fullscreen */}
+                {/* Merchandise Overlay - Persistent until page refresh or player expanded */}
+                {isMerchandiseActive && !isBrowserFullscreen && (
+                  <MerchandiseOverlay
+                    merchandiseHotspots={gameConfig.merchandiseHotspots}
+                    onHotspotClick={setActiveHotspot}
+                    merchandiseHotspotIconUrl={gameConfig.merchandiseHotspotIconUrl || gameConfig.hotspotIconUrl}
+                    onClose={() => setIsMerchandiseActive(false)}
+                  />
+                )}
+
+                {/* Hotspot Layer */}
                 {!isBrowserFullscreen && (
                   <HotspotLayer
-                    hotspots={gameConfig.hotspots}
+                    hotspots={gameConfig.hotspots.filter(h =>
+                      !(isMerchandiseActive && (h.id === 'merchandise' || h.label.toLowerCase() === 'merchandise'))
+                    )}
                     iconUrl={gameConfig.hotspotIconUrl}
                     onHotspotClick={handleHotspotClick}
                   />
                 )}
 
-
+                {/* Info Modal (Modals only) */}
+                <InfoModal
+                  data={activeHotspot}
+                  onClose={() => setActiveHotspot(null)}
+                  onPosterClick={handlePosterClick}
+                />
 
                 {/* Centered Input Overlay */}
                 {showInput && (
@@ -722,26 +1055,45 @@ const App: React.FC = () => {
                   </div>
                 )}
 
-
-                {/* Only show Now Playing when not in initial state */}
-                {!isInitialState && audioSrc && audioSrc.includes('/radio.mp3') && (
+                {/* Now Playing Info - Hide if Merchandise Overlay is active */}
+                {!isInitialState && !isMerchandiseActive && (!activeHotspot || (activeHotspot.id !== 'merchandise' && activeHotspot.label.toLowerCase() !== 'merchandise')) && (
                   <div className="absolute bottom-0 inset-x-0 p-4 z-10 pointer-events-none">
                     <div className="w-full p-4">
-                      {nowPlaying ? (
-                        <div className="overflow-hidden drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
-                          <p className="text-xs text-cyan-400 font-bold tracking-wider">NOW PLAYING</p>
-                          <h3 className="text-lg font-bold text-white truncate">{nowPlaying.now_playing.song.title}</h3>
-                          <p className="text-xs text-gray-400 truncate">{nowPlaying.now_playing.song.album}</p>
-                          <div className="mt-2 pt-2">
-                            <p className="text-xs text-gray-500 font-bold tracking-wider">UP NEXT</p>
-                            <p className="text-sm text-gray-400 truncate">{nowPlaying.playing_next.song.title}</p>
+                      {audioSrc && audioSrc.includes('/radio.mp3') ? (
+                        // Live Stream UI
+                        nowPlaying ? (
+                          <div className="overflow-hidden drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
+                            <p className="text-xs text-cyan-400 font-bold tracking-wider">LIVE STREAM</p>
+                            <h3 className="text-lg font-bold text-white truncate">{nowPlaying.now_playing.song.title}</h3>
+                            <p className="text-xs text-gray-400 truncate">{nowPlaying.now_playing.song.artist} - {nowPlaying.now_playing.song.album}</p>
+                            <div className="mt-2 pt-2">
+                              <p className="text-xs text-gray-500 font-bold tracking-wider">UP NEXT</p>
+                              <p className="text-sm text-gray-400 truncate">{nowPlaying.playing_next.song.title}</p>
+                            </div>
                           </div>
+                        ) : (
+                          <div className="text-center text-gray-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
+                            <p>Loading stream details...</p>
+                          </div>
+                        )
+                      ) : currentMapping ? (
+                        // On-Demand UI
+                        <div className="overflow-hidden drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
+                          <p className="text-xs text-gold-500 font-bold tracking-wider">NOW PLAYING</p>
+                          <h3 className="text-lg font-bold text-white truncate">{currentMapping.title || 'Unknown Title'}</h3>
+                          <p className="text-xs text-gray-400 truncate">
+                            {currentMapping.artist ? `${currentMapping.artist} - ` : ''}
+                            {currentMapping.album || ''}
+                          </p>
+                          {/* Up Next for Playlist */}
+                          {playlist.length > 0 && currentTrackIndex < playlist.length - 1 && (
+                            <div className="mt-2 pt-2">
+                              <p className="text-xs text-gray-500 font-bold tracking-wider">UP NEXT</p>
+                              <p className="text-sm text-gray-400 truncate">{playlist[currentTrackIndex + 1].media.title}</p>
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="text-center text-gray-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.7)]">
-                          <p>Loading stream details...</p>
-                        </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 )}
@@ -750,6 +1102,16 @@ const App: React.FC = () => {
           </main>
         </div>
       </div>
+
+      <audio
+        ref={audioRef}
+        src={audioSrc || ''}
+        loop={playlist.length === 0 && audioSrc && !audioSrc.includes('/radio.mp3')}
+        onEnded={handleTrackEnded}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onError={(e) => console.error('Audio error:', e)}
+      />
 
       <AdminModal
         isOpen={isAdminOpen}
@@ -766,10 +1128,6 @@ const App: React.FC = () => {
         gameConfig={gameConfig}
         onUpdateGameConfig={saveGameConfig}
         onResetGameConfig={resetGameConfig}
-      />
-      <InfoModal
-        data={activeHotspot}
-        onClose={() => setActiveHotspot(null)}
       />
     </>
   );
