@@ -24,12 +24,21 @@ const MAPPINGS_FILE = 'mappings.json';
 const THEATER_CONFIG_FILE = 'theater-config.json';
 const VIDEO_POSITION_FILE = 'video-position.json';
 const HOTSPOT_CONFIG_FILE = 'hotspot-config.json';
+const LANDING_CONFIG_FILE = 'landing-config.json';
+const LOBBY_CONFIG_FILE = 'lobby-config.json';
+const FAUNA_CONFIG_FILE = 'fauna-config.json';
+const DEADSPEAK_CONFIG_FILE = 'deadspeak-config.json';
+const PARLOR_CONFIG_FILE = 'parlor-config.json';
+const SPECIAL_EXHIBITS_HALL_CONFIG_FILE = 'special-exhibits-hall-config.json';
+const ILLUSIONIST_MENU_CONFIG_FILE = 'illusionist-menu-config.json';
+const MEMBERS_FILE = 'members.json';
+const PLAYER_APP_CONFIG_FILE = 'player-app-config.json';
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // Initialize Gemini API
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent';
 
 // Default mappings
 // Updated defaults from constants.ts
@@ -581,6 +590,212 @@ app.post('/api/hotspot-config', async (req, res) => {
   }
 });
 
+// Landing Config Endpoints
+app.get('/api/landing-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(LANDING_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json({ hotspotIconUrl: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png', hotspots: [] });
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading landing config:', error);
+    res.status(500).json({ error: 'Failed to read landing config' });
+  }
+});
+
+app.post('/api/landing-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(LANDING_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving landing config:', error);
+    res.status(500).json({ error: 'Failed to save landing config' });
+  }
+});
+
+// Player App Config Endpoints
+const PLAYER_APP_DEFAULT_CONFIG = {
+  defaultStageImg: 'https://storage.googleapis.com/hoosierillusionsimages/roomlogo.png',
+  stream1: 'https://stream.hoosierillusions.com/listen/hoosier-illusions/radio.mp3',
+  video1: 'https://storage.googleapis.com/hoosierillusionsvideos/roomlogo.mp4',
+  loop1: 'https://storage.googleapis.com/hoosierillusionsvideos/roomlogo.mp4',
+  isMuted1: true,
+  stream2: 'https://storage.googleapis.com/hoosierillusionsaudio/DanToler.mp3',
+  video2: 'https://storage.googleapis.com/hoosierillusionsvideos/UnicornLoop.mp4',
+  loop2: 'https://storage.googleapis.com/hoosierillusionsvideos/UnicornLoop.mp4',
+  isMuted2: true,
+  stream3: 'https://storage.googleapis.com/hoosierillusionsaudio/CallToJoin.mp3',
+  video3: 'https://storage.googleapis.com/hoosierillusionsvideos/MermaidLoop.mp4',
+  loop3: 'https://storage.googleapis.com/hoosierillusionsvideos/MermaidLoop.mp4',
+  isMuted3: true
+};
+
+app.get('/api/player-app-config', async (req, res) => {
+  try {
+    // FORCING DEFAULTS TO ENSURE NEW VIDEOS LOAD
+    console.log('[Server] Forcing player app defaults');
+    res.json(PLAYER_APP_DEFAULT_CONFIG);
+  } catch (error) {
+    console.error('Error reading player app config:', error);
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+app.post('/api/player-app-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(PLAYER_APP_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), {
+      contentType: 'application/json',
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving player app config:', error);
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Lobby Config Endpoints
+app.get('/api/lobby-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(LOBBY_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json({ hotspotIconUrl: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png', hotspots: [] });
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading lobby config:', error);
+    res.status(500).json({ error: 'Failed to read lobby config' });
+  }
+});
+
+app.post('/api/lobby-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(LOBBY_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving lobby config:', error);
+    res.status(500).json({ error: 'Failed to save lobby config' });
+  }
+});
+
+// Special Exhibits Config Endpoints
+
+// Fauna
+app.get('/api/fauna-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(FAUNA_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json({ hotspotIconUrl: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png', hotspots: [] });
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading fauna config:', error);
+    res.status(500).json({ error: 'Failed to read fauna config' });
+  }
+});
+
+app.post('/api/fauna-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(FAUNA_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving fauna config:', error);
+    res.status(500).json({ error: 'Failed to save fauna config' });
+  }
+});
+
+// DeadSpeak
+app.get('/api/deadspeak-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(DEADSPEAK_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json({ hotspotIconUrl: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png', hotspots: [] });
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading deadspeak config:', error);
+    res.status(500).json({ error: 'Failed to read deadspeak config' });
+  }
+});
+
+app.post('/api/deadspeak-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(DEADSPEAK_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving deadspeak config:', error);
+    res.status(500).json({ error: 'Failed to save deadspeak config' });
+  }
+});
+
+// The Parlor
+app.get('/api/parlor-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(PARLOR_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json({ hotspotIconUrl: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png', hotspots: [] });
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading parlor config:', error);
+    res.status(500).json({ error: 'Failed to read parlor config' });
+  }
+});
+
+app.post('/api/parlor-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(PARLOR_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving parlor config:', error);
+    res.status(500).json({ error: 'Failed to save parlor config' });
+  }
+});
+
+// Special Exhibits Hall
+app.get('/api/special-exhibits-hall-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(SPECIAL_EXHIBITS_HALL_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json({ hotspotIconUrl: 'https://storage.googleapis.com/hoosierillusionsimages/OwlWhiteTransparent.png', hotspots: [] });
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading special exhibits hall config:', error);
+    res.status(500).json({ error: 'Failed to read special exhibits hall config' });
+  }
+});
+
+app.post('/api/special-exhibits-hall-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(SPECIAL_EXHIBITS_HALL_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving special exhibits hall config:', error);
+    res.status(500).json({ error: 'Failed to save special exhibits hall config' });
+  }
+});
+
 
 // Force update Album Posters hotspot
 app.post('/api/force-update-album-posters', async (req, res) => {
@@ -623,79 +838,109 @@ app.post('/api/force-update-album-posters', async (req, res) => {
   }
 });
 
-// Chat endpoint - handles both triggers and AI chat
+// Chat endpoint - handles AI chat
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, mappings } = req.body;
+    const { message } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
+    // Fetch the system context from GCS
+    const bucket = storage.bucket(BUCKET_NAME);
+    const contextFile = bucket.file(ORACLE_CONTEXT_FILE);
+    const [exists] = await contextFile.exists();
+
+    let systemInstruction = "You are the Oracle of Hoosier Illusions. You are mysterious, slightly cryptic, but helpful. You speak in riddles sometimes.";
+    if (exists) {
+      const [contents] = await contextFile.download();
+      systemInstruction = contents.toString();
     }
 
-    const messageLower = message.trim().toLowerCase();
+    // Prepare the payload for Gemini REST API
+    const payload = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: `System Instruction: ${systemInstruction}\n\nUser Message: ${message}` }
+          ]
+        }
+      ],
+      generationConfig: {
+        maxOutputTokens: 256,
+        temperature: 0.7
+      }
+    };
 
-    // Check if message matches a trigger
-    if (mappings && mappings[messageLower]) {
-      return res.json({
-        type: 'trigger',
-        trigger: messageLower,
-        mapping: mappings[messageLower]
-      });
-    }
-
-    // If not a trigger, use AI to respond
     if (!GEMINI_API_KEY) {
-      return res.json({
-        type: 'chat',
-        response: "I'm here to help! Try typing one of the available shortcuts to play media, or ask me how to use this site."
-      });
+      console.warn("Missing GEMINI_API_KEY environment variable");
+      return res.status(503).json({ reply: "The Oracle is disconnected. (Missing GEMINI_API_KEY in server environment)" });
     }
-
-    const systemPrompt = `You are a helpful assistant for the Hoosier Illusions website. This is an interactive media experience where users can:
-- Type trigger words to play videos and audio streams
-- Available triggers include: ${mappings ? Object.keys(mappings).filter(k => mappings[k].showInDropdown).join(', ') : 'hoosier illusions, hoosier haze, deadspeak'}
-- The site features a virtual theater where videos play within a theater screen
-- Users can access an admin panel at /admin to manage media mappings
-
-Keep responses brief (1-2 sentences), friendly, and focused on helping users navigate the site. If they ask about triggers, mention the available ones.`;
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `${systemPrompt}\n\nUser: ${message}`
-          }]
-        }]
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
-      throw new Error(`Gemini API request failed: ${response.status} ${errorText}`);
+      console.error('Gemini API Error:', errorText);
+      throw new Error(`Gemini API Failed (${response.status}): ${errorText}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm here to help! Try typing a trigger word to play media.";
-
-    res.json({
-      type: 'chat',
-      response: aiResponse
-    });
+    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
 
   } catch (error) {
-    console.error('Error in chat endpoint:', error);
-    res.json({
-      type: 'chat',
-      response: "I'm here to help! Try typing one of the available shortcuts to play media."
-    });
+    res.status(500).json({ error: `Oracle Error: ${error.message}` });
   }
 });
 
+// Oracle Configuration Endpoints
+const ORACLE_CONFIG_FILE = 'oracle-config.json';
+
+app.get('/api/oracle-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(ORACLE_CONFIG_FILE);
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      // Default Configuration
+      const defaultConfig = {
+        greeting: "Greeting, seeker. The Oracle is listening. Select a path.",
+        mainMenu: [
+          { id: 'login', label: 'Access My Account', type: 'action', action: 'login' },
+          { id: 'store', label: 'Make an Offering (Store)', type: 'link', value: 'https://hoosierillusions.com/store' },
+          { id: 'faq', label: 'Seek Wisdom (FAQs)', type: 'submenu', value: 'faq' }
+        ],
+        faqs: [
+          { question: "What is this place?", answer: "This is the digital echo of the Hoosier Illusions Theater." },
+          { question: "How do I watch?", answer: "The eye sees all when the time is right." }
+        ]
+      };
+      return res.json(defaultConfig);
+    }
+
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error fetching oracle config:', error);
+    res.status(500).json({ error: 'Failed to fetch oracle config' });
+  }
+});
+
+app.post('/api/oracle-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(ORACLE_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2));
+    console.log('Oracle config saved.');
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving oracle config:', error);
+    res.status(500).json({ error: 'Failed to save oracle config' });
+  }
+});
 
 
 // Proxy for Now Playing data to remove corsproxy.io dependency
@@ -846,12 +1091,233 @@ app.get('/api/proxy-audio', async (req, res) => {
   }
 });
 
-// Serve static files AFTER API routes
+// Illusionist Menu Config
+app.get('/api/illusionist-menu-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(ILLUSIONIST_MENU_CONFIG_FILE);
+    const [exists] = await file.exists();
+    if (!exists) {
+      // Default config
+      return res.json({
+        greeting: "Welcome to the Illusionist's Lounge. Please select an option.",
+        mainMenu: [
+          { id: '1', label: 'Login', type: 'action', action: 'login' },
+          { id: '2', label: 'Back', type: 'back' }
+        ],
+        faqs: []
+      });
+    }
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading illusionist menu config:', error);
+    res.status(500).json({ error: 'Failed to read illusionist menu config' });
+  }
+});
+
+app.post('/api/illusionist-menu-config', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(ILLUSIONIST_MENU_CONFIG_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving illusionist menu config:', error);
+    res.status(500).json({ error: 'Failed to save illusionist menu config' });
+  }
+});
+
+// MEMBERSHIP ENDPOINTS
+
+// Get All Members (Admin)
+app.get('/api/members', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(MEMBERS_FILE);
+    const [exists] = await file.exists();
+    if (!exists) return res.json([]);
+
+    const [contents] = await file.download();
+    res.json(JSON.parse(contents.toString()));
+  } catch (error) {
+    console.error('Error reading members:', error);
+    res.status(500).json({ error: 'Failed to read members' });
+  }
+});
+
+// Update Members List (Admin)
+app.post('/api/members', async (req, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(MEMBERS_FILE);
+    await file.save(JSON.stringify(req.body, null, 2), { contentType: 'application/json' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving members:', error);
+    res.status(500).json({ error: 'Failed to save members' });
+  }
+});
+
+// Member Signup
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { username, password, email, tier } = req.body;
+
+    // Basic validation
+    if (!username || !password || !email) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(MEMBERS_FILE);
+    const [exists] = await file.exists();
+
+    let members = [];
+    if (exists) {
+      const [contents] = await file.download();
+      members = JSON.parse(contents.toString());
+    }
+
+    // Check if user exists
+    if (members.find(m => m.username === username || m.email === email)) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+
+    // Default tier is Theater if not specified
+    const newMember = {
+      id: Date.now().toString(),
+      username,
+      password, // In production, hash this!
+      email,
+      tier: tier || 'Theater',
+      joinedAt: new Date().toISOString()
+    };
+
+    members.push(newMember);
+
+    await file.save(JSON.stringify(members, null, 2), { contentType: 'application/json' });
+
+    res.json({ success: true, member: { username, email, tier: newMember.tier } });
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal signup error' });
+  }
+});
+
+// Admin: Upload Bounty Guide
+app.post('/api/admin/upload-guide', async (req, res) => {
+  try {
+    const { imageData, filename } = req.body;
+    if (!imageData || !filename) {
+      return res.status(400).json({ error: 'Missing image data or filename' });
+    }
+
+    // Strip header if present (data:image/png;base64,...)
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const bucket = storage.bucket('hoosierillusionsimages'); // Use the images bucket
+    const file = bucket.file(`bounty_guides/${filename}`);
+
+    await file.save(buffer, {
+      contentType: 'image/png',
+      metadata: {
+        cacheControl: 'public, max-age=31536000',
+      },
+    });
+
+    await file.makePublic();
+
+    // Return a proxy URL to avoid public bucket issues
+    const publicUrl = `https://hoosierillusions.com/api/guide/${filename}`;
+
+    res.json({ success: true, url: publicUrl });
+
+  } catch (error) {
+    console.error('Upload guide error:', error);
+    res.status(500).json({ error: 'Failed to upload guide' });
+  }
+});
+
+// Admin: Proxy Bounty Guide (Serves images without needing public bucket)
+app.get('/api/guide/:filename', async (req, res) => {
+  try {
+    const { filename } = req.params;
+
+    // Basic validation to prevent directory traversal
+    if (!filename || filename.includes('..') || filename.includes('/')) {
+      return res.status(400).send('Invalid filename');
+    }
+
+    const bucket = storage.bucket('hoosierillusionsimages');
+    const file = bucket.file(`bounty_guides/${filename}`);
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      return res.status(404).send('Guide not found');
+    }
+
+    // Set correct headers
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+
+    file.createReadStream().pipe(res);
+
+  } catch (error) {
+    console.error('Proxy guide error:', error);
+    res.status(500).send('Error serving guide');
+  }
+});
+
+// Member Login
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(MEMBERS_FILE);
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      return res.status(401).json({ error: 'Authentication failed' });
+    }
+
+    const [contents] = await file.download();
+    const members = JSON.parse(contents.toString());
+
+    // Find member
+    const member = members.find(m => m.username === username);
+
+    if (member && member.password === password) {
+      return res.json({
+        success: true,
+        member: {
+          username: member.username,
+          email: member.email,
+          tier: member.tier
+        }
+      });
+    }
+
+    return res.status(401).json({ error: 'Invalid credentials' });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal login error' });
+  }
+});
+
+// Serve static files from dist (this includes player.html and admin.html)
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Explicit route for Admin Dashboard
+app.get('/eventsadmin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'eventsadmin.html'));
+});
+
 // Catch-all: serve index.html for any other routes (SPA routing)
-app.use((req, res) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoosier Illusions Admin</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --dark: #000;
+            --gray: #1a1a1a;
+            --text: #fff;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .admin-panel {
+            background: var(--gray);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: var(--gold);
+            font-size: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: var(--gold);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 13px;
+        }
+
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .checkbox-field input {
+            width: auto;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        button {
+            width: 100%;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 15px;
+            height: 15px;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-panel">
+        <h1>App Configuration</h1>
+
+        <form id="configForm">
+            <div class="section">
+                <span class="section-title">Stage Player</span>
+                <div class="field">
+                    <label>Default Stage Image URL (Logo)</label>
+                    <input type="text" id="defaultStageImg" placeholder="https://...">
+                </div>
+            </div>
+
+            <div class="section">
+                <span class="section-title">Stream 1 (Radio)</span>
+                <div class="field">
+                    <label>Audio URL</label>
+                    <input type="text" id="stream1" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Performance Video URL (1:1)</label>
+                    <input type="text" id="video1" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Loop Video URL (1:1)</label>
+                    <input type="text" id="loop1" placeholder="https://...">
+                </div>
+                <div class="checkbox-field">
+                    <input type="checkbox" id="isMuted1">
+                    <label for="isMuted1">Mute Video Audio</label>
+                </div>
+            </div>
+
+            <div class="section">
+                <span class="section-title">Stream 2 (DeadSpeak)</span>
+                <div class="field">
+                    <label>Audio URL</label>
+                    <input type="text" id="stream2" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Performance Video URL (1:1)</label>
+                    <input type="text" id="video2" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Loop Video URL (1:1)</label>
+                    <input type="text" id="loop2" placeholder="https://...">
+                </div>
+                <div class="checkbox-field">
+                    <input type="checkbox" id="isMuted2">
+                    <label for="isMuted2">Mute Video Audio</label>
+                </div>
+            </div>
+
+            <div class="section">
+                <span class="section-title">Stream 3 (The Parlor)</span>
+                <div class="field">
+                    <label>Audio URL</label>
+                    <input type="text" id="stream3" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Performance Video URL (1:1)</label>
+                    <input type="text" id="video3" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Loop Video URL (1:1)</label>
+                    <input type="text" id="loop3" placeholder="https://...">
+                </div>
+                <div class="checkbox-field">
+                    <input type="checkbox" id="isMuted3">
+                    <label for="isMuted3">Mute Video Audio</label>
+                </div>
+            </div>
+
+            <button type="submit" id="saveBtn">Save Configuration</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('configForm');
+        const status = document.getElementById('status');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Load current config
+        async function loadConfig() {
+            try {
+                const res = await fetch('/api/player-app-config');
+                if (res.ok) {
+                    const config = await res.json();
+                    document.getElementById('defaultStageImg').value = config.defaultStageImg || '';
+
+                    document.getElementById('stream1').value = config.stream1 || '';
+                    document.getElementById('video1').value = config.video1 || '';
+                    document.getElementById('loop1').value = config.loop1 || '';
+                    document.getElementById('isMuted1').checked = config.isMuted1 !== false;
+
+                    document.getElementById('stream2').value = config.stream2 || '';
+                    document.getElementById('video2').value = config.video2 || '';
+                    document.getElementById('loop2').value = config.loop2 || '';
+                    document.getElementById('isMuted2').checked = config.isMuted2 !== false;
+
+                    document.getElementById('stream3').value = config.stream3 || '';
+                    document.getElementById('video3').value = config.video3 || '';
+                    document.getElementById('loop3').value = config.loop3 || '';
+                    document.getElementById('isMuted3').checked = config.isMuted3 !== false;
+                }
+            } catch (err) {
+                console.error('Failed to load config', err);
+            }
+        }
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            saveBtn.disabled = true;
+            status.innerText = 'Saving...';
+            status.className = '';
+
+            const config = {
+                defaultStageImg: document.getElementById('defaultStageImg').value,
+
+                stream1: document.getElementById('stream1').value,
+                video1: document.getElementById('video1').value,
+                loop1: document.getElementById('loop1').value,
+                isMuted1: document.getElementById('isMuted1').checked,
+
+                stream2: document.getElementById('stream2').value,
+                video2: document.getElementById('video2').value,
+                loop2: document.getElementById('loop2').value,
+                isMuted2: document.getElementById('isMuted2').checked,
+
+                stream3: document.getElementById('stream3').value,
+                video3: document.getElementById('video3').value,
+                loop3: document.getElementById('loop3').value,
+                isMuted3: document.getElementById('isMuted3').checked
+            };
+
+            try {
+                const res = await fetch('/api/player-app-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (res.ok) {
+                    status.innerText = 'Configuration saved successfully!';
+                    status.className = 'success';
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (err) {
+                status.innerText = 'Error saving configuration.';
+                status.className = 'error';
+            } finally {
+                saveBtn.disabled = false;
+            }
+        };
+
+        loadConfig();
+    </script>
+</body>
+
+</html>

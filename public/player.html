@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoosier Illusions</title>
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Main Container */
+        .mobile-viewer {
+            width: 100%;
+            max-width: 800px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: #000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: none;
+            margin: 0 auto;
+        }
+
+        /* Layout Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+            flex-grow: 1;
+            background: #000;
+            padding: 20px 0;
+        }
+
+        /* Media Players */
+        .media-wrapper {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Stage Player (Center) */
+        .stage-media {
+            width: 100%;
+            height: 450px;
+            /* Match landing page image height */
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            margin: 20px 0;
+        }
+
+        /* Menu Player (Bottom) */
+        .menu-media {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            flex-shrink: 0;
+            position: relative;
+            background: #111;
+        }
+
+        /* Menu Controls */
+        .menu-controls {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            z-index: 20;
+        }
+
+        .menu-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-btn:active {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Media Elements Scaling */
+        .stage-media video,
+        .stage-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Ensure 16:9 videos are fully visible within 450px height */
+        }
+
+        .menu-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Fill 16:9 container */
+        }
+
+        video,
+        img {
+            position: relative;
+        }
+
+        /* Remove controls in fullscreen */
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+
+        video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+
+        video::-webkit-media-controls-panel {
+            display: none !important;
+        }
+
+        video::-webkit-media-controls-play-button {
+            display: none !important;
+        }
+
+        video::-webkit-media-controls-start-playback-button {
+            display: none !important;
+        }
+
+        #stage-img,
+        #stage-logo-video {
+            z-index: 10;
+        }
+
+        #stage-video {
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mobile-viewer">
+        <div class="app-container">
+
+            <!-- Stage Player (1:1) -->
+            <div class="media-wrapper stage-media" id="stage-container" onclick="handleStageClick()">
+                <!-- Logo Tier (Shown on page load and reset) -->
+                <img id="stage-img" src="https://storage.googleapis.com/hoosierillusionsimages/roomlogo.png" alt="Logo">
+                <video id="stage-logo-video" loop muted playsinline style="display: none;"></video>
+
+                <!-- Active Content Tier (Shown during playback) -->
+                <video id="stage-video" muted playsinline preload="auto" style="display: none;"
+                    onerror="handleVideoError()"></video>
+            </div>
+
+            <!-- Menu Player (16:9) -->
+            <div class="media-wrapper menu-media">
+                <video id="menu-video" loop muted playsinline preload="auto">
+                    <source src="https://storage.googleapis.com/hoosierillusionsvideos/PlaylistsShowcase.mp4#t=0.001"
+                        type="video/mp4">
+                </video>
+                <div class="menu-controls">
+                    <button class="menu-btn" onclick="event.stopPropagation(); handleMenuTap(1)"
+                        title="Illusionist"></button>
+                    <button class="menu-btn" onclick="event.stopPropagation(); handleMenuTap(2)"
+                        title="Unicorn"></button>
+                    <button class="menu-btn" onclick="event.stopPropagation(); handleMenuTap(3)"
+                        title="Mermaid"></button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const radio = new Audio();
+        let currentUrl = null;
+        let config = {};
+
+        // Playlist State
+        let isSequence = true;
+        let currentIndex = 1;
+        let perfUrls = [];
+        // let currentUrl = null; // This declaration is redundant as currentUrl is declared above
+
+        function handleStageClick() {
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+
+            if (isFullscreen) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            } else if (!currentUrl) {
+                // Tap 1: Start Stream 1
+                handleMenuTap(1);
+            } else {
+                // Tap 2: Go Fullscreen
+                enterFullscreen();
+            }
+        }
+
+        function enterFullscreen() {
+            const stage = document.getElementById('stage-container');
+            const stageVid = document.getElementById('stage-video');
+            const logoVid = document.getElementById('stage-logo-video');
+            const activeVid = (stageVid.style.display !== 'none') ? stageVid : logoVid;
+
+            if (stage.requestFullscreen) {
+                stage.requestFullscreen();
+            } else if (stage.webkitRequestFullscreen) {
+                stage.webkitRequestFullscreen();
+            } else if (activeVid && activeVid.webkitEnterFullscreen) {
+                activeVid.webkitEnterFullscreen();
+            }
+        }
+
+        function resetToOnload() {
+            muteEverything();
+            currentUrl = null;
+
+            const defaultLogo = config.defaultStageImg || 'https://storage.googleapis.com/hoosierillusionsimages/roomlogo.png';
+            updateLayer('stage-img', 'stage-logo-video', defaultLogo);
+
+            document.getElementById('stage-video').style.display = 'none';
+            document.getElementById('stage-video').pause();
+
+            radio.pause();
+            radio.src = "";
+            radio.load();
+
+            const stageVid = document.getElementById('stage-video');
+            stageVid.onended = null;
+        }
+
+        function handleVideoError() {
+            const stageVid = document.getElementById('stage-video');
+            console.error('Video load error:', stageVid.src);
+            // If error in sequence, just skip to next
+            if (isSequence) {
+                stageVid.onended();
+            } else {
+                stageVid.play().catch(() => { });
+            }
+        }
+
+        function playTrack(url) {
+            const stageVid = document.getElementById('stage-video');
+            if (!url || url.trim().length < 5) return;
+
+            // Set loop state based on current playback mode
+            stageVid.loop = !isSequence;
+
+            const targetUrl = url.trim();
+            // Normalize for comparison
+            const currentAbs = stageVid.src;
+            let nextAbs = "";
+            try {
+                nextAbs = new URL(targetUrl, window.location.href).href;
+            } catch (e) {
+                nextAbs = targetUrl;
+            }
+
+            if (currentAbs === nextAbs && stageVid.readyState >= 1) {
+                stageVid.currentTime = 0;
+                stageVid.play().catch(() => {
+                    stageVid.load();
+                    stageVid.play().catch(e => console.log('Replay error:', e));
+                });
+            } else {
+                stageVid.src = targetUrl;
+                stageVid.load();
+                stageVid.play().catch(e => console.log('New track error:', e));
+            }
+        }
+
+        function updateLayer(imgId, videoId, url) {
+            const imgEl = document.getElementById(imgId);
+            const vidEl = document.getElementById(videoId);
+            if (!imgEl || !vidEl) return;
+
+            const targetUrl = url ? url.trim() : null;
+            if (!targetUrl) {
+                imgEl.style.display = 'none';
+                vidEl.style.display = 'none';
+                vidEl.pause();
+                return;
+            }
+
+            const isVideo = targetUrl.toLowerCase().endsWith('.mp4');
+            if (isVideo) {
+                imgEl.style.display = 'none';
+                vidEl.src = targetUrl;
+                vidEl.style.display = 'block';
+                vidEl.load();
+                vidEl.play().catch(e => console.log('Video layer error:', e));
+            } else {
+                vidEl.style.display = 'none';
+                vidEl.pause();
+                imgEl.src = targetUrl;
+                imgEl.style.display = 'block';
+            }
+        }
+
+        async function fetchConfig() {
+            try {
+                const res = await fetch('/api/player-app-config?v=3'); // Bump cache version
+                if (res.ok) {
+                    config = await res.json();
+                    console.log('[Player] Config loaded:', config);
+
+                    const defaultLogo = config.defaultStageImg || 'https://storage.googleapis.com/hoosierillusionsimages/roomlogo.png';
+                    updateLayer('stage-img', 'stage-logo-video', defaultLogo);
+
+                    // Pre-populate performance URLs for sequence
+                    perfUrls = [config.video1, config.video2, config.video3].filter(u => u && u.length > 5);
+                }
+            } catch (err) {
+                console.error('Failed to load config', err);
+            }
+        }
+
+        function handleMenuTap(index) {
+            console.log('[Player] Menu tapped:', index);
+            const trackUrl = config['stream' + index];
+            const videoUrl = config['video' + index];
+            const loopUrl = config['loop' + index];
+            const isMuted = config['isMuted' + index] !== false;
+
+            console.log('[Player] Target URLs:', { videoUrl, loopUrl, trackUrl });
+
+            // Lock to this specific video
+            isSequence = false;
+            currentIndex = index;
+
+            // Visual Update: Hide Logo Tier, Show Video Tier
+            document.getElementById('stage-img').style.display = 'none';
+            document.getElementById('stage-logo-video').style.display = 'none';
+            document.getElementById('stage-logo-video').pause();
+
+            const stageVid = document.getElementById('stage-video');
+            stageVid.style.display = 'block';
+
+            // Universal Playlist Logic
+            stageVid.onended = () => {
+                if (isSequence) {
+                    // Sequence Mode: Next video in perfUrls
+                    currentIndex = (currentIndex % perfUrls.length) + 1;
+                    const nextUrl = config['video' + currentIndex] || perfUrls[0];
+                    playTrack(nextUrl);
+                }
+            };
+
+            // Set native loop if we're locked to a single track
+            stageVid.loop = !isSequence;
+
+            // Prefer the 'loop' video if defined in config, otherwise fallback to 'video'
+            const activeUrl = (loopUrl && loopUrl.length > 5) ? loopUrl : videoUrl;
+            playTrack(activeUrl);
+
+            // State
+            currentUrl = trackUrl;
+
+            // Audio Flow
+            if (trackUrl && trackUrl.trim().length > 5) {
+                // Only change audio if it's different
+                if (radio.src !== new URL(trackUrl, window.location.href).href) {
+                    radio.pause();
+                    radio.src = trackUrl;
+                    radio.loop = true;
+                }
+            }
+
+            playEverything(isMuted);
+        }
+
+        function playEverything(isMuted) {
+            radio.muted = false;
+            radio.play().catch(e => console.log('Audio error:', e));
+
+            const stageVid = document.getElementById('stage-video');
+            const menuVid = document.getElementById('menu-video');
+
+            stageVid.muted = isMuted;
+            stageVid.play().catch(e => console.log('Stage video error:', e));
+
+            menuVid.muted = true;
+            menuVid.play().catch(e => console.log('Menu video error:', e));
+        }
+
+        function muteEverything() {
+            radio.muted = true;
+            document.querySelectorAll('video').forEach(v => v.pause());
+        }
+
+        // Init
+        fetchConfig();
+    </script>
+</body>
+
+</html>
