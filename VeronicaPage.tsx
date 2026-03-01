@@ -19,12 +19,12 @@ const VeronicaPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-50 text-neutral-900 font-sans selection:bg-emerald-100 overflow-x-hidden">
+        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden bg-neutral-50 text-neutral-900 font-sans selection:bg-emerald-100 scroll-smooth">
             {/* Decorative background element */}
             <div className="fixed top-0 right-0 w-1/3 h-screen bg-[#f8fcf9] -z-10" />
 
             {/* Navigation-like Header */}
-            <nav className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 bg-neutral-50/90 backdrop-blur-md border-b border-neutral-100 px-6 py-4 flex justify-between items-center transition-all">
                 <div className="flex items-center gap-2">
                     <div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-200">V</div>
                     <span className="text-xl font-bold tracking-tight">Veronica</span>
