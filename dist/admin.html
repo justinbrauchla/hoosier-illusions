@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoosier Illusions Admin</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --dark: #000;
+            --gray: #1a1a1a;
+            --light-gray: #2a2a2a;
+            --text: #fff;
+            --success: #4caf50;
+            --error: #f44336;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .admin-panel {
+            background: var(--gray);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        h1 {
+            color: var(--gold);
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 20px;
+            background: var(--light-gray);
+            border-radius: 12px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-field input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--gold);
+        }
+
+        .checkbox-field label {
+            margin-bottom: 0;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        button {
+            width: 100%;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 20px;
+            min-height: 20px;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-panel">
+        <h1>Global Configuration</h1>
+
+        <form id="configForm">
+            <!-- Stage / Menu Visuals -->
+            <div class="section">
+                <span class="section-title">Static Visuals</span>
+                <div class="field">
+                    <label>Default Stage Image (Logo)</label>
+                    <input type="text" id="defaultStageImg" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Menu Background Video</label>
+                    <input type="text" id="menuVideo" placeholder="https://...">
+                </div>
+            </div>
+
+            <!-- Audio -->
+            <div class="section">
+                <span class="section-title">Audio Stream</span>
+                <div class="field">
+                    <label>Continuous AzuraCast URL</label>
+                    <input type="text" id="stream1" placeholder="https://...">
+                </div>
+            </div>
+
+            <!-- Fauna the Musical -->
+            <div class="section">
+                <span class="section-title">Fauna the Musical (Btn 1)</span>
+                <div class="field">
+                    <label>Performance Video URL</label>
+                    <input type="text" id="video1" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Loop Video URL (Optional)</label>
+                    <input type="text" id="loop1" placeholder="https://...">
+                </div>
+                <div class="checkbox-field">
+                    <input type="checkbox" id="isMuted1">
+                    <label for="isMuted1">Mute Video Audio (Default: Checked)</label>
+                </div>
+            </div>
+
+            <!-- DeadSpeak -->
+            <div class="section">
+                <span class="section-title">DeadSpeak (Btn 2)</span>
+                <div class="field">
+                    <label>Performance Video URL</label>
+                    <input type="text" id="video2" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Loop Video URL (Optional)</label>
+                    <input type="text" id="loop2" placeholder="https://...">
+                </div>
+                <div class="checkbox-field">
+                    <input type="checkbox" id="isMuted2">
+                    <label for="isMuted2">Mute Video Audio (Default: Checked)</label>
+                </div>
+            </div>
+
+            <!-- The Parlor -->
+            <div class="section">
+                <span class="section-title">The Parlor (Btn 3)</span>
+                <div class="field">
+                    <label>Performance Video URL</label>
+                    <input type="text" id="video3" placeholder="https://...">
+                </div>
+                <div class="field">
+                    <label>Loop Video URL (Optional)</label>
+                    <input type="text" id="loop3" placeholder="https://...">
+                </div>
+                <div class="checkbox-field">
+                    <input type="checkbox" id="isMuted3">
+                    <label for="isMuted3">Mute Video Audio (Default: Checked)</label>
+                </div>
+            </div>
+
+            <button type="submit" id="saveBtn">Save All Changes</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('configForm');
+        const status = document.getElementById('status');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Load current config
+        async function loadConfig() {
+            try {
+                const res = await fetch('/api/player-app-config');
+                if (res.ok) {
+                    const config = await res.json();
+
+                    document.getElementById('defaultStageImg').value = config.defaultStageImg || '';
+                    document.getElementById('menuVideo').value = config.menuVideo || '';
+                    document.getElementById('stream1').value = config.stream1 || '';
+
+                    document.getElementById('video1').value = config.video1 || '';
+                    document.getElementById('loop1').value = config.loop1 || '';
+                    document.getElementById('isMuted1').checked = config.isMuted1 !== false;
+
+                    document.getElementById('video2').value = config.video2 || '';
+                    document.getElementById('loop2').value = config.loop2 || '';
+                    document.getElementById('isMuted2').checked = config.isMuted2 !== false;
+
+                    document.getElementById('video3').value = config.video3 || '';
+                    document.getElementById('loop3').value = config.loop3 || '';
+                    document.getElementById('isMuted3').checked = config.isMuted3 !== false;
+                }
+            } catch (err) {
+                console.error('Failed to load config', err);
+                status.innerText = 'Error loading current config.';
+                status.className = 'error';
+            }
+        }
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            saveBtn.disabled = true;
+            status.innerText = 'Saving to Google Cloud...';
+            status.className = '';
+
+            const config = {
+                defaultStageImg: document.getElementById('defaultStageImg').value,
+                menuVideo: document.getElementById('menuVideo').value,
+                stream1: document.getElementById('stream1').value,
+
+                video1: document.getElementById('video1').value,
+                loop1: document.getElementById('loop1').value,
+                isMuted1: document.getElementById('isMuted1').checked,
+
+                video2: document.getElementById('video2').value,
+                loop2: document.getElementById('loop2').value,
+                isMuted2: document.getElementById('isMuted2').checked,
+
+                video3: document.getElementById('video3').value,
+                loop3: document.getElementById('loop3').value,
+                isMuted3: document.getElementById('isMuted3').checked
+            };
+
+            try {
+                const res = await fetch('/api/player-app-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (res.ok) {
+                    status.innerText = 'Configuration saved successfully! Changes are live.';
+                    status.className = 'success';
+                    // Scroll to status
+                    status.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (err) {
+                status.innerText = 'Error saving configuration. Please try again.';
+                status.className = 'error';
+            } finally {
+                saveBtn.disabled = false;
+            }
+        };
+
+        loadConfig();
+    </script>
+</body>
+
+</html>
