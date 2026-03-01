@@ -20,7 +20,7 @@
         /* Main Container */
         .mobile-viewer {
             width: 100%;
-            max-width: 800px;
+            max-width: 450px;
             min-height: 100vh;
             min-height: 100dvh;
             background: #000;
@@ -55,8 +55,7 @@
         /* Stage Player (Center) */
         .stage-media {
             width: 100%;
-            height: 450px;
-            /* Match landing page image height */
+            aspect-ratio: 1 / 1;
             background: #000;
             display: flex;
             justify-content: center;
@@ -101,8 +100,8 @@
         .stage-media img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            /* Ensure 16:9 videos are fully visible within 450px height */
+            object-fit: cover;
+            /* Crop and fit 16:9 videos to fill the square container */
         }
 
         .menu-media video {
@@ -173,11 +172,11 @@
                 </video>
                 <div class="menu-controls">
                     <button class="menu-btn" onclick="event.stopPropagation(); handleMenuTap(1)"
-                        title="Illusionist"></button>
+                        title="Fauna the Musical"></button>
                     <button class="menu-btn" onclick="event.stopPropagation(); handleMenuTap(2)"
-                        title="Unicorn"></button>
+                        title="DeadSpeak"></button>
                     <button class="menu-btn" onclick="event.stopPropagation(); handleMenuTap(3)"
-                        title="Mermaid"></button>
+                        title="The Parlor"></button>
                 </div>
             </div>
 
@@ -327,6 +326,13 @@
 
                     // Pre-populate performance URLs for sequence
                     perfUrls = [config.video1, config.video2, config.video3].filter(u => u && u.length > 5);
+
+                    // Update Menu Video
+                    const menuVid = document.getElementById('menu-video');
+                    if (config.menuVideo && menuVid) {
+                        menuVid.src = config.menuVideo;
+                        menuVid.load();
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load config', err);
@@ -335,12 +341,11 @@
 
         function handleMenuTap(index) {
             console.log('[Player] Menu tapped:', index);
-            const trackUrl = config['stream' + index];
             const videoUrl = config['video' + index];
             const loopUrl = config['loop' + index];
             const isMuted = config['isMuted' + index] !== false;
 
-            console.log('[Player] Target URLs:', { videoUrl, loopUrl, trackUrl });
+            console.log('[Player] Target URLs:', { videoUrl, loopUrl });
 
             // Lock to this specific video
             isSequence = false;
@@ -371,17 +376,20 @@
             const activeUrl = (loopUrl && loopUrl.length > 5) ? loopUrl : videoUrl;
             playTrack(activeUrl);
 
-            // State
-            currentUrl = trackUrl;
+            // Audio Flow: Always use the continuous AzuraCast stream (config.stream1)
+            const streamUrl = config.stream1 || 'https://stream.hoosierillusions.com/listen/hoosier-illusions/radio.mp3';
 
-            // Audio Flow
-            if (trackUrl && trackUrl.trim().length > 5) {
-                // Only change audio if it's different
-                if (radio.src !== new URL(trackUrl, window.location.href).href) {
-                    radio.pause();
-                    radio.src = trackUrl;
-                    radio.loop = true;
-                }
+            // State
+            currentUrl = streamUrl;
+
+            // Only change radio src if it is NOT already playing the continuous stream
+            // We use the full URL comparison to be safe
+            const absoluteStreamUrl = new URL(streamUrl, window.location.href).href;
+            if (radio.src !== absoluteStreamUrl) {
+                radio.pause();
+                radio.src = streamUrl;
+                radio.loop = true;
+                radio.load();
             }
 
             playEverything(isMuted);

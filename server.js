@@ -6,8 +6,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// Security Middleware
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
 console.log('Starting server...');
 
@@ -620,9 +630,10 @@ app.post('/api/landing-config', async (req, res) => {
 // Player App Config Endpoints
 const PLAYER_APP_DEFAULT_CONFIG = {
   defaultStageImg: 'https://storage.googleapis.com/hoosierillusionsimages/roomlogo.png',
+  menuVideo: 'https://storage.googleapis.com/hoosierillusionsvideos/PlaylistsShowcase.mp4#t=0.001',
   stream1: 'https://stream.hoosierillusions.com/listen/hoosier-illusions/radio.mp3',
-  video1: 'https://storage.googleapis.com/hoosierillusionsvideos/roomlogo.mp4',
-  loop1: 'https://storage.googleapis.com/hoosierillusionsvideos/roomlogo.mp4',
+  video1: 'https://storage.googleapis.com/hoosierillusionsvideos/OwlLoop.mp4',
+  loop1: 'https://storage.googleapis.com/hoosierillusionsvideos/OwlLoop.mp4',
   isMuted1: true,
   stream2: 'https://storage.googleapis.com/hoosierillusionsaudio/DanToler.mp3',
   video2: 'https://storage.googleapis.com/hoosierillusionsvideos/UnicornLoop.mp4',
@@ -636,12 +647,22 @@ const PLAYER_APP_DEFAULT_CONFIG = {
 
 app.get('/api/player-app-config', async (req, res) => {
   try {
-    // FORCING DEFAULTS TO ENSURE NEW VIDEOS LOAD
-    console.log('[Server] Forcing player app defaults');
-    res.json(PLAYER_APP_DEFAULT_CONFIG);
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(PLAYER_APP_CONFIG_FILE);
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      return res.json(PLAYER_APP_DEFAULT_CONFIG);
+    }
+
+    const [contents] = await file.download();
+    const cloudConfig = JSON.parse(contents.toString());
+
+    // Merge cloud config with defaults to ensure all fields exist
+    res.json({ ...PLAYER_APP_DEFAULT_CONFIG, ...cloudConfig });
   } catch (error) {
     console.error('Error reading player app config:', error);
-    res.status(500).json({ error: 'Failed' });
+    res.status(500).json({ error: 'Failed to read config' });
   }
 });
 
@@ -887,11 +908,20 @@ app.post('/api/chat', async (req, res) => {
       throw new Error(`Gemini API Failed (${response.status}): ${errorText}`);
     }
 
+
     const data = await response.json();
     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
+    res.json({ reply: aiText });
 
   } catch (error) {
-    res.status(500).json({ error: `Oracle Error: ${error.message}` });
+    // Only log the full error server-side
+    console.error('Oracle Exception:', error);
+
+    // Return a generic error to the client to prevent info leakage
+    res.status(500).json({
+      error: 'The Oracle is temporarily unavailable.',
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

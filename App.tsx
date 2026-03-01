@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
+import VeronicaPage from './VeronicaPage';
 
 const PlayerPage: React.FC = () => (
   <div className="w-full h-full bg-black">
     <iframe
-      src="/player.html?v=1004"
+      src="/player.html?v=1006"
       className="w-full h-full border-none"
       title="Hoosier Illusions Player"
       style={{ height: 'calc(var(--vh, 1vh) * 100)', width: '100%' }}
@@ -14,7 +15,7 @@ const PlayerPage: React.FC = () => (
 const AdminPage: React.FC = () => (
   <div className="w-full h-full bg-black">
     <iframe
-      src="/admin.html?v=1004"
+      src="/admin.html?v=1006"
       className="w-full h-full border-none"
       title="Hoosier Illusions Admin"
       style={{ height: 'calc(var(--vh, 1vh) * 100)', width: '100%' }}
@@ -43,6 +44,10 @@ const App: React.FC = () => {
   const path = window.location.pathname;
   if (path === '/admin') {
     return <AdminPage />;
+  }
+
+  if (path === '/veronica') {
+    return <VeronicaPage />;
   }
 
   return <PlayerPage />;
