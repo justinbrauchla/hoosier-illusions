@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import VeronicaPage from './VeronicaPage';
+import SallyPage from './SallyPage';
 
 const PlayerPage: React.FC = () => (
   <div className="w-full h-full bg-black">
@@ -49,6 +50,10 @@ const App: React.FC = () => {
 
   if (path === '/veronica') {
     return <VeronicaPage />;
+  }
+
+  if (path === '/sally') {
+    return <SallyPage />;
   }
 
 
