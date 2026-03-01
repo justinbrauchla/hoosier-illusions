@@ -41,7 +41,8 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const path = window.location.pathname;
+  const path = window.location.pathname.toLowerCase().replace(/\/$/, "");
+
   if (path === '/admin') {
     return <AdminPage />;
   }
@@ -49,6 +50,7 @@ const App: React.FC = () => {
   if (path === '/veronica') {
     return <VeronicaPage />;
   }
+
 
   return <PlayerPage />;
 };
